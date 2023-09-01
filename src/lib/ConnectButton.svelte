@@ -6,6 +6,7 @@
   import walletConnectLogo from '../assets/walletConnect.png';
   import xButton from '../assets/xButton.svg';
   import copyIcon from '../assets/copy.svg';
+  import checkIcon from '../assets/check.png';
   import disconnectIcon from '../assets/disconnect.svg';
   import {
     connect,
@@ -95,6 +96,18 @@
     closeModal();
   }
 
+  let copied = false;
+
+  function copyToClipboard(text: string | null) {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    copied = true;
+
+    setTimeout(() => {
+      copied = false;
+    }, 300);
+  }
+
   $: address = $walletStore.address;
   $: status = $walletStore.status;
 </script>
@@ -164,13 +177,23 @@
             <p class="font-semibold text-lg">
               {$walletStore.ensName || (address && trimEthAddress(address))}
             </p>
-            <img class="w-5 h-5 cursor-pointer" src={copyIcon} alt="copy-icon" />
+
+            <button
+              class="bg-transparent border-none h-5 p-0"
+              on:click={() => copyToClipboard($walletStore.address)}
+            >
+              {#if copied}
+                <img class="ccheckopy w-5 h-5 cursor-pointer" src={checkIcon} alt="copied-icon" />
+              {:else}
+                <img class="copy w-5 h-5 cursor-pointer" src={copyIcon} alt="copy-icon" />
+              {/if}
+            </button>
           </div>
           <p class="text-[#888] text-md">{$walletStore.balance}</p>
         </div>
 
         <button
-          class="bg-[#383838] w-full hover:bg-white hover:bg-opacity-10 text-white p-3 rounded-2xl flex items-center justify-center gap-3 font-semibold"
+          class="bg-[#383838] w-full hover:bg-white hover:bg-opacity-10 transition duration-300 text-white p-3 rounded-2xl flex items-center justify-center gap-3 font-semibold"
           on:click={handleDisconnect}
         >
           <img src={disconnectIcon} alt="disconnect-icon" class="w-4 h-4" />
@@ -196,3 +219,15 @@
     {/if}
   </div>
 </Modal>
+
+<style>
+  .copy {
+    opacity: 0.4;
+    transition-property: opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  .copy:hover {
+    opacity: 1;
+  }
+</style>
