@@ -2,6 +2,7 @@
   import Modal from './Modal.svelte';
   import { walletStore, disconnectWallet } from './stores/WalletStore';
   import metamaskLogo from '../assets/metamask.svg';
+  import blockie from '../assets/blockie.png';
   import walletConnectLogo from '../assets/walletConnect.png';
   import xButton from '../assets/xButton.svg';
   import {
@@ -18,6 +19,11 @@
     PublicClient<FallbackTransport>,
     WebSocketPublicClient<FallbackTransport>
   >;
+  export let fetchAndSetEnsData: (
+    address: `0x${string}`,
+  ) => Promise<{ ensName: null; avatarUrl: null }>;
+
+  export let trimEthAddress: (address: string) => string;
 
   let showModal = false;
 
@@ -46,6 +52,7 @@
       walletStore.update(state => ({
         ...state,
         status: 'connecting',
+
         connector: config.connectors[index].name,
       }));
 
@@ -54,11 +61,14 @@
       });
       console.log('Connected successfully:', result);
 
+      const ensData = await fetchAndSetEnsData(result.account);
+
       walletStore.update(state => ({
         ...state,
         address: result.account,
         chain: result.connector?.chains[0].name,
         status: 'connected',
+        ...ensData,
       }));
 
       console.log('Connected walletStore:', walletStore);
@@ -77,6 +87,7 @@
     }
   }
 
+  $: address = $walletStore.address;
   $: status = $walletStore.status;
 </script>
 
@@ -85,7 +96,14 @@
   class="rounded-lg border border-transparent px-4 py-3 text-base font-semibold bg-[#383838] hover:bg-white hover:bg-opacity-10 cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if status === 'connected'}
-    Disconnect
+    <div class="flex items-center">
+      <img
+        src={$walletStore.avatarUrl ? $walletStore.avatarUrl : blockie}
+        alt="wallet-icon"
+        class="w-6 h-6 mr-2 rounded-full"
+      />
+      {address && ($walletStore.ensName ? $walletStore.ensName : trimEthAddress(address))}
+    </div>
   {:else}
     Connect
   {/if}

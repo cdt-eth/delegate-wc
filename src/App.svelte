@@ -6,8 +6,9 @@
     InjectedConnector,
     configureChains,
     createConfig,
+    fetchEnsAvatar,
+    fetchEnsName,
     getNetwork,
-    getPublicClient,
   } from '@wagmi/core';
   import { WalletConnectConnector } from '@wagmi/connectors/walletConnect';
   import { publicProvider } from '@wagmi/core/providers/public';
@@ -100,13 +101,33 @@
   const account = getAccount();
   const { chain } = getNetwork();
 
-  onMount(() => {
+  export async function fetchAndSetEnsData(address: `0x${string}`) {
+    const ensData = { ensName: null, avatarUrl: null };
+
+    try {
+      const ensName = await fetchEnsName({ address });
+
+      if (ensName) {
+        const avatarUrl = await fetchEnsAvatar({ name: ensName });
+        Object.assign(ensData, { ensName, avatarUrl });
+      }
+    } catch (error) {
+      console.error('Error fetching ENS data:', error);
+    }
+
+    return ensData;
+  }
+
+  onMount(async () => {
     if (account.isConnected) {
+      const ensData = await fetchAndSetEnsData(account.address as `0x${string}`);
+
       walletStore.update(state => ({
         ...state,
         address: account.address as `0x${string}`,
         chain: chain?.name,
         status: 'connected',
+        ...ensData,
       }));
     } else {
       walletStore.update(state => ({
@@ -118,7 +139,7 @@
     }
   });
 
-  const trimEthAddress = (address: string) =>
+  export const trimEthAddress = (address: string) =>
     [address.slice(0, 5), address.slice(address.length - 4)].join('...');
 </script>
 
@@ -134,12 +155,16 @@
       />
     </a>
 
-    <ConnectButton {config} />
+    <ConnectButton {config} {fetchAndSetEnsData} {trimEthAddress} />
   </div>
 
   {#if status === 'connected'}
     <div>
-      <p class="text-3xl">Welcome, {address && trimEthAddress(address)}!</p>
+      <!-- <p class="text-3xl">Welcome, {address && trimEthAddress(address)}!</p> -->
+      <p class="text-3xl">
+        Welcome, {address &&
+          ($walletStore.ensName ? $walletStore.ensName : trimEthAddress(address))}!
+      </p>
 
       <p class="text-[#888] pt-3 m-auto text-xl italic">
         You are {status} to {$walletStore.chain}.

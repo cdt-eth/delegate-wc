@@ -3,6 +3,8 @@ import { disconnect } from '@wagmi/core';
 
 interface WalletState {
   address: string | null;
+  ensName: string | null;
+  avatarUrl: string | null;
   connector: string | undefined;
   chain: string | undefined;
   status: 'connecting' | 'reconnecting' | 'connected' | 'disconnected' | null;
@@ -11,6 +13,8 @@ interface WalletState {
 
 const initialState: WalletState = {
   address: null,
+  ensName: null,
+  avatarUrl: null,
   connector: undefined,
   chain: undefined,
   status: 'disconnected',
