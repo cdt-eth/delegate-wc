@@ -95,7 +95,9 @@
   on:click={handleClick}
   class="rounded-lg border border-transparent px-4 py-3 text-base font-semibold bg-[#383838] hover:bg-white hover:bg-opacity-10 cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
-  {#if status === 'connected'}
+  {#if status === 'connecting'}
+    <Spinner size="16px" color="#fff" />
+  {:else if status === 'connected'}
     <div class="flex items-center">
       <img
         src={$walletStore.avatarUrl ? $walletStore.avatarUrl : blockie}

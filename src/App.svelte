@@ -119,6 +119,11 @@
   }
 
   onMount(async () => {
+    walletStore.update(state => ({
+      ...state,
+      status: 'connecting',
+    }));
+
     if (account.isConnected) {
       const ensData = await fetchAndSetEnsData(account.address as `0x${string}`);
 
