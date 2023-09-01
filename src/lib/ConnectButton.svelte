@@ -151,10 +151,16 @@
       {/if}
     {:else if status !== 'disconnected'}
       <div class="flex flex-col gap-6">
-        <img class="rounded-full h-24 w-24 m-auto" src={$walletStore.avatarUrl} alt="avatar" />
+        <img
+          class="rounded-full h-24 w-24 m-auto"
+          src={$walletStore.avatarUrl || blockie}
+          alt="avatar"
+        />
 
         <div>
-          <p class="font-semibold text-lg">{$walletStore.ensName}</p>
+          <p class="font-semibold text-lg">
+            {$walletStore.ensName || (address && trimEthAddress(address))}
+          </p>
           <p class="text-[#888] text-md">{$walletStore.balance}</p>
         </div>
 
