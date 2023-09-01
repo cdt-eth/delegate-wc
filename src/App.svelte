@@ -160,7 +160,6 @@
 
   {#if status === 'connected'}
     <div>
-      <!-- <p class="text-3xl">Welcome, {address && trimEthAddress(address)}!</p> -->
       <p class="text-3xl">
         Welcome, {address &&
           ($walletStore.ensName ? $walletStore.ensName : trimEthAddress(address))}!
