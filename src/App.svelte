@@ -6,6 +6,7 @@
     InjectedConnector,
     configureChains,
     createConfig,
+    fetchBalance,
     fetchEnsAvatar,
     fetchEnsName,
     getNetwork,
@@ -126,12 +127,17 @@
 
     if (account.isConnected) {
       const ensData = await fetchAndSetEnsData(account.address as `0x${string}`);
+      const balance = await fetchBalance({ address: account.address as `0x${string}` });
+      const formattedBalance = parseFloat(balance.formatted).toFixed(
+        Math.min(4, (balance.formatted.split('.')[1] || '').length),
+      );
 
       walletStore.update(state => ({
         ...state,
         address: account.address as `0x${string}`,
         chain: chain?.name,
         status: 'connected',
+        balance: formattedBalance + ' ' + balance.symbol,
         ...ensData,
       }));
     } else {

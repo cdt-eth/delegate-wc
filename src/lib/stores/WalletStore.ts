@@ -5,6 +5,7 @@ interface WalletState {
   address: string | null;
   ensName: string | null;
   avatarUrl: string | null;
+  balance: string | null;
   connector: string | undefined;
   chain: string | undefined;
   status: 'connecting' | 'reconnecting' | 'connected' | 'disconnected' | null;
@@ -15,6 +16,7 @@ const initialState: WalletState = {
   address: null,
   ensName: null,
   avatarUrl: null,
+  balance: null,
   connector: undefined,
   chain: undefined,
   status: 'disconnected',
@@ -25,8 +27,8 @@ export const walletStore = writable<WalletState>(initialState);
 
 export const disconnectWallet = async () => {
   try {
-    const result = await disconnect();
-    console.log('Successfully disconnected:', result);
+    await disconnect();
+    console.log('Successfully disconnected');
     walletStore.set(initialState);
   } catch {
     console.log('Error disconnecting');

@@ -5,12 +5,14 @@
   import blockie from '../assets/blockie.png';
   import walletConnectLogo from '../assets/walletConnect.png';
   import xButton from '../assets/xButton.svg';
+  import disconnectIcon from '../assets/disconnect.svg';
   import {
     connect,
     type Config,
     type PublicClient,
     type WebSocketPublicClient,
     getAccount,
+    fetchBalance,
   } from '@wagmi/core';
   import type { FallbackTransport } from 'viem';
   import Spinner from './Spinner.svelte';
@@ -62,12 +64,17 @@
       console.log('Connected successfully:', result);
 
       const ensData = await fetchAndSetEnsData(result.account);
+      const balance = await fetchBalance({ address: result.account as `0x${string}` });
+      const formattedBalance = parseFloat(balance.formatted).toFixed(
+        Math.min(4, (balance.formatted.split('.')[1] || '').length),
+      );
 
       walletStore.update(state => ({
         ...state,
         address: result.account,
         chain: result.connector?.chains[0].name,
         status: 'connected',
+        balance: formattedBalance + ' ' + balance.symbol,
         ...ensData,
       }));
 
@@ -79,12 +86,12 @@
     }
   }
 
-  async function handleClick() {
-    if (status !== 'disconnected') {
-      disconnectWallet();
-    } else {
-      openModal();
-    }
+  let isDisconnecting = false;
+  async function handleDisconnect() {
+    isDisconnecting = true;
+    await disconnectWallet();
+    isDisconnecting = false;
+    closeModal();
   }
 
   $: address = $walletStore.address;
@@ -92,7 +99,7 @@
 </script>
 
 <button
-  on:click={handleClick}
+  on:click={openModal}
   class="rounded-lg border border-transparent px-4 py-3 text-base font-semibold bg-[#383838] hover:bg-white hover:bg-opacity-10 cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if status === 'connecting'}
@@ -127,7 +134,7 @@
       </button>
     </div>
 
-    {#if status === 'connecting'}
+    {#if status === 'connecting' || isDisconnecting}
       <Spinner
         size="100px"
         color="#333"
@@ -142,6 +149,23 @@
           </p>
         </div>
       {/if}
+    {:else if status !== 'disconnected'}
+      <div class="flex flex-col gap-6">
+        <img class="rounded-full h-24 w-24 m-auto" src={$walletStore.avatarUrl} alt="avatar" />
+
+        <div>
+          <p class="font-semibold text-lg">{$walletStore.ensName}</p>
+          <p class="text-[#888] text-md">{$walletStore.balance}</p>
+        </div>
+
+        <button
+          class="bg-[#383838] w-full hover:bg-white hover:bg-opacity-10 text-white p-3 rounded-2xl flex items-center justify-center gap-3 font-semibold"
+          on:click={handleDisconnect}
+        >
+          <img src={disconnectIcon} alt="disconnect-icon" class="w-4 h-4" />
+          Disconnect
+        </button>
+      </div>
     {:else}
       <!-- Connectors -->
       <div class="flex flex-col gap-4">
