@@ -102,19 +102,19 @@
 
   onMount(() => {
     if (account.isConnected) {
-      walletStore.set({
+      walletStore.update(state => ({
+        ...state,
         address: account.address as `0x${string}`,
         chain: chain?.name,
         status: 'connected',
-        // provider:
-      });
+      }));
     } else {
-      walletStore.set({
+      walletStore.update(state => ({
+        ...state,
         address: null,
         chain: chain?.name,
         status: 'disconnected',
-        // provider:
-      });
+      }));
     }
   });
 

@@ -40,19 +40,27 @@
     }
   }
 
+  const account = getAccount();
   async function connectWallet(index: number) {
     try {
+      walletStore.update(state => ({
+        ...state,
+        status: 'connecting',
+        connector: config.connectors[index].name,
+      }));
+
       const result = await connect({
         connector: config.connectors[index],
       });
       console.log('Connected successfully:', result);
 
-      walletStore.set({
+      walletStore.update(state => ({
+        ...state,
         address: result.account,
         chain: result.connector?.chains[0].name,
         status: 'connected',
-        // provider: result.provider,
-      });
+      }));
+
       console.log('Connected walletStore:', walletStore);
 
       closeModal();
