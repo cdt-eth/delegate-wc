@@ -5,6 +5,7 @@
   import blockie from '../assets/blockie.png';
   import walletConnectLogo from '../assets/walletConnect.png';
   import xButton from '../assets/xButton.svg';
+  import copyIcon from '../assets/copy.svg';
   import disconnectIcon from '../assets/disconnect.svg';
   import {
     connect,
@@ -156,11 +157,15 @@
           src={$walletStore.avatarUrl || blockie}
           alt="avatar"
         />
+        <div />
 
         <div>
-          <p class="font-semibold text-lg">
-            {$walletStore.ensName || (address && trimEthAddress(address))}
-          </p>
+          <div class="flex items-center justify-center gap-2">
+            <p class="font-semibold text-lg">
+              {$walletStore.ensName || (address && trimEthAddress(address))}
+            </p>
+            <img class="w-5 h-5 cursor-pointer" src={copyIcon} alt="copy-icon" />
+          </div>
           <p class="text-[#888] text-md">{$walletStore.balance}</p>
         </div>
 
