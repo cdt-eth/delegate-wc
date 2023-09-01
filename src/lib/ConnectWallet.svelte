@@ -167,7 +167,7 @@
       {/if}
     {:else if status !== 'disconnected'}
       <div class="flex flex-col gap-6">
-        <div class="border w-max m-auto">
+        <div class="w-max m-auto">
           <div class="flex items-center relative">
             <img
               style=""
