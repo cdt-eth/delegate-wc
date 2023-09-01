@@ -1,7 +1,7 @@
 <script lang="ts">
   import delegateLogo from './assets/logo.svg';
   import { walletStore } from './lib/stores/WalletStore';
-  import ConnectButton from './lib/ConnectButton.svelte';
+  import ConnectWallet from './lib/ConnectWallet.svelte';
   import {
     InjectedConnector,
     configureChains,
@@ -166,7 +166,7 @@
       />
     </a>
 
-    <ConnectButton {config} {fetchAndSetEnsData} {trimEthAddress} />
+    <ConnectWallet {config} {fetchAndSetEnsData} {trimEthAddress} />
   </div>
 
   {#if status === 'connected'}
