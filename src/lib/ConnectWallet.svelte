@@ -30,7 +30,7 @@
 
   export let trimEthAddress: (address: string) => string;
 
-  let showModal = true;
+  let showModal = false;
 
   function openModal() {
     showModal = true;
@@ -167,7 +167,7 @@
       {/if}
     {:else if status !== 'disconnected'}
       <div class="flex flex-col gap-6">
-        <div class=" w-max m-auto">
+        <div class="border w-max m-auto">
           <div class="flex items-center relative">
             <img
               style=""

@@ -8,6 +8,7 @@ interface WalletState {
   balance: string | null;
   connector: string | undefined;
   chain: string | undefined;
+  chainId: number;
   status: 'connecting' | 'reconnecting' | 'connected' | 'disconnected' | null;
   provider?: any | null;
 }
@@ -19,6 +20,7 @@ const initialState: WalletState = {
   balance: null,
   connector: undefined,
   chain: undefined,
+  chainId: 1,
   status: 'disconnected',
   provider: null,
 };

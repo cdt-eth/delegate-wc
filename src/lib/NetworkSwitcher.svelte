@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { switchNetwork } from '@wagmi/core';
   import ethereumLogo from '../assets/chains/ethereum.svg';
   import polygonLogo from '../assets/chains/polygon.svg';
   import zoraLogo from '../assets/chains/zora.png';
   import downArrowIcon from '../assets/downArrowIcon.svg';
+  import { walletStore } from './stores/WalletStore';
 
   let isOpen: boolean = false;
   let selectedOption: string | null = 'Ethereum';
@@ -11,15 +13,36 @@
     isOpen = !isOpen;
   }
 
-  function selectOption(option: string): void {
-    selectedOption = option;
+  async function selectOption(option: Option): Promise<void> {
+    selectedOption = option.name;
     isOpen = false;
+
+    try {
+      const network = await switchNetwork({ chainId: option.chainId });
+
+      walletStore.update(state => {
+        return {
+          ...state,
+          chain: option.name,
+        };
+      });
+
+      console.log('Network switched:', network);
+    } catch (error) {
+      console.error('Error switching network:', error);
+    }
   }
 
-  const options = [
+  type Option = {
+    name: string;
+    logo: string;
+    chainId: number;
+  };
+
+  const options: Option[] = [
     { name: 'Ethereum', logo: ethereumLogo, chainId: 1 },
-    { name: 'Polygon', logo: polygonLogo, chainId: 2 },
-    { name: 'Zora', logo: zoraLogo, chainId: 3 },
+    { name: 'Polygon', logo: polygonLogo, chainId: 137 },
+    { name: 'Zora', logo: zoraLogo, chainId: 7777777 },
   ];
 </script>
 
@@ -49,7 +72,7 @@
           selectedOption === option.name ? 'bg-[#00b3ff] bg-opacity-10 rounded-xl' : ''
         }`}
       >
-        <button class="flex items-center gap-2" on:click={() => selectOption(option.name)}>
+        <button class="flex items-center gap-2" on:click={() => selectOption(option)}>
           <img src={option.logo} class="h-5 w-5 rounded-full" alt={option.name} />
           {option.name}
         </button>
