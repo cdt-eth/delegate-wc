@@ -3,7 +3,7 @@
   import { walletStore, disconnectWallet } from './stores/WalletStore';
   import metamaskLogo from '../assets/metamask.svg';
   import blockie from '../assets/blockie.png';
-  import walletConnectLogo from '../assets/walletConnect.png';
+  import walletConnectLogo from '../assets/walletconnectLogo.png
   import xButton from '../assets/xButton.svg';
   import copyIcon from '../assets/copy.svg';
   import checkIcon from '../assets/check.png';
