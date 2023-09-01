@@ -176,7 +176,6 @@
               alt="avatar"
             />
 
-            
             <NetworkSwitcher />
           </div>
         </div>
