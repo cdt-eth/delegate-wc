@@ -11,7 +11,7 @@
     fetchEnsName,
     getNetwork,
   } from '@wagmi/core';
-  import { WalletConnectConnector } from '@wagmi/connectors/walletConnect';
+  import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect';
   import { publicProvider } from '@wagmi/core/providers/public';
   import { infuraProvider } from '@wagmi/core/providers/infura';
   import {
@@ -90,7 +90,6 @@
       new WalletConnectConnector({
         options: {
           projectId: import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID,
-          showQrModal: true,
         },
       }),
     ],
