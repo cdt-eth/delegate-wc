@@ -5,6 +5,7 @@
   import metamaskLogo from '../assets/metamask.svg';
   import walletConnectLogo from '../assets/walletconnectLogo.png';
   import xButton from '../assets/icons/xButton.svg';
+  import leftArrow from '../assets/icons/leftArrow.svg';
   import copyIcon from '../assets/icons/copy.svg';
   import checkIcon from '../assets/icons/check.png';
   import disconnectIcon from '../assets/icons/disconnect.svg';
@@ -19,6 +20,7 @@
   import Spinner from './Spinner.svelte';
   import Connectors from './Connectors.svelte';
   import NetworkSwitcher from './NetworkSwitcher.svelte';
+  import DontHaveWallet from './DontHaveWallet.svelte';
   import GetAWallet from './GetAWallet.svelte';
 
   export let config: Config<
@@ -32,7 +34,7 @@
   const trimEthAddress = (address: string) =>
     [address.slice(0, 5), address.slice(address.length - 4)].join('...');
 
-  let showModal = false;
+  let showModal = true;
 
   function openModal() {
     showModal = true;
@@ -40,6 +42,7 @@
 
   function closeModal() {
     showModal = false;
+    dontHaveWallet = false;
   }
 
   let isDisconnecting = false;
@@ -64,11 +67,17 @@
 
   $: address = $walletStore.address;
   $: status = $walletStore.status;
+
+  let dontHaveWallet = false;
+
+  function handleGetAWallet() {
+    dontHaveWallet = !dontHaveWallet;
+  }
 </script>
 
 <button
   on:click={openModal}
-  class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[50%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
+  class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[60%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if status === 'connecting'}
     <Spinner size="16px" color="#fff" />
@@ -90,13 +99,26 @@
 <Modal {showModal} on:close={closeModal}>
   <div class="dark:text-white">
     <div class="flex items-center justify-between mb-6">
-      <div class="w-3" />
+      {#if dontHaveWallet}
+        <button
+          class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
+          on:click={handleGetAWallet}
+        >
+          <img class="w-3 h-3 m-auto" src={leftArrow} alt="x-button" />
+        </button>
+      {:else}
+        <div class="w-3" />
+      {/if}
       <h2 class="text-xl font-semibold">
-        {status === 'connecting' ? $walletStore.connector : 'Connect Wallet'}
+        {status === 'connecting'
+          ? $walletStore.connector
+          : dontHaveWallet
+          ? 'Get A Wallet'
+          : 'Connect Wallet'}
       </h2>
 
       <button
-        class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-[#333333] hover:rounded-full"
+        class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
         on:click={closeModal}
       >
         <img class="w-3 h-3 m-auto" src={xButton} alt="x-button" />
@@ -162,12 +184,13 @@
           Disconnect
         </button>
       </div>
+    {:else if dontHaveWallet}
+      <GetAWallet />
     {:else}
       <Connectors {config} {closeModal} {fetchAndSetEnsData} />
+      <DontHaveWallet {handleGetAWallet} />
     {/if}
   </div>
-
-  <GetAWallet />
 </Modal>
 
 <style>

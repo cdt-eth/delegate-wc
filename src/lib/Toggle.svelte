@@ -1,17 +1,12 @@
 <script>
-  let isDark = localStorage.getItem('dark-mode') === 'true';
-
-  $: {
-    document.documentElement.classList.toggle('dark', isDark);
-    localStorage.setItem('dark-mode', isDark.toString());
-  }
+  import { darkMode } from './stores/DarkMode';
 
   function enableLightMode() {
-    isDark = false;
+    darkMode.set(false);
   }
 
   function enableDarkMode() {
-    isDark = true;
+    darkMode.set(true);
   }
 </script>
 
@@ -20,8 +15,8 @@
 >
   <button
     on:click={enableLightMode}
-    disabled={!isDark}
-    class={isDark ? 'cursor-pointer text-black' : 'cursor-default text-gray-400'}
+    disabled={!$darkMode}
+    class={$darkMode ? 'cursor-pointer text-black' : 'cursor-default text-gray-400'}
   >
     <!-- we inline the SVGs so that we can change their color, svgs in image tags are rasterized -->
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
@@ -87,8 +82,8 @@
 
   <button
     on:click={enableDarkMode}
-    disabled={isDark}
-    class={isDark ? 'cursor-default text-gray-400' : 'cursor-pointer text-black'}
+    disabled={$darkMode}
+    class={$darkMode ? 'cursor-default text-gray-400' : 'cursor-pointer text-black'}
   >
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
       ><path
