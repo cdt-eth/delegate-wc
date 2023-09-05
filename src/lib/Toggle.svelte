@@ -23,7 +23,7 @@
     disabled={!isDark}
     class={isDark ? 'cursor-pointer text-black' : 'cursor-default text-gray-400'}
   >
-    <!-- we inline the SVGs so that we can chang -->
+    <!-- we inline the SVGs so that we can change their color, svgs in image tags are rasterized -->
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
       ><path
         d="M9.00001 12.6363C11.0083 12.6363 12.6364 11.0082 12.6364 8.99989C12.6364 6.99158 11.0083 5.36353 9.00001 5.36353C6.9917 5.36353 5.36365 6.99158 5.36365 8.99989C5.36365 11.0082 6.9917 12.6363 9.00001 12.6363Z"
