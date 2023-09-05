@@ -21,7 +21,7 @@
 <div
   class="{showModal
     ? 'fixed'
-    : 'hidden'} fixed top-0 left-0 w-full h-full z-50 overflow-auto bg cursor-default"
+    : 'hidden'} fixed top-0 left-0 w-full h-full z-50 overflow-auto bg-[#47586b] bg-opacity-25 dark:bg-black dark:bg-opacity-40 cursor-default"
   on:click={close}
   on:keydown={handleKeydown}
   role="button"
@@ -37,9 +37,3 @@
     <slot />
   </div>
 </div>
-
-<style>
-  .bg {
-    background: rgba(0, 0, 0, 0.4);
-  }
-</style>
