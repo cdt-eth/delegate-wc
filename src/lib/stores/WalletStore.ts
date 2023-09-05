@@ -13,7 +13,7 @@ interface WalletState {
   provider?: any | null;
 }
 
-const initialState: WalletState = {
+export const initialState: WalletState = {
   address: null,
   ensName: null,
   avatarUrl: null,

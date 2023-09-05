@@ -1,6 +1,6 @@
 <script lang="ts">
   import Modal from './Modal.svelte';
-  import { walletStore, disconnectWallet } from './stores/WalletStore';
+  import { walletStore, disconnectWallet, initialState } from './stores/WalletStore';
   import blockie from '../assets/blockie.png';
   import metamaskLogo from '../assets/metamask.svg';
   import walletConnectLogo from '../assets/walletconnectLogo.png';
@@ -82,6 +82,7 @@
   function goBack() {
     aboutWallets = false;
     dontHaveWallet = false;
+    walletStore.set(initialState);
   }
 </script>
 
@@ -109,7 +110,7 @@
 <Modal {showModal} on:close={closeModal}>
   <div class="dark:text-white">
     <div class="flex items-center justify-between mb-6">
-      {#if dontHaveWallet || aboutWallets}
+      {#if dontHaveWallet || aboutWallets || $walletStore.status === 'connecting'}
         <button
           class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
           on:click={goBack}
@@ -117,7 +118,6 @@
           <img class="w-3 h-3 m-auto" src={leftArrow} alt="x-button" />
         </button>
       {:else}
-        <!-- <div class="w-3" /> -->
         <button
           class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
           on:click={handleAboutWallets}
