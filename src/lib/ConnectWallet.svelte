@@ -6,6 +6,7 @@
   import walletConnectLogo from '../assets/walletconnectLogo.png';
   import xButton from '../assets/icons/xButton.svg';
   import leftArrow from '../assets/icons/leftArrow.svg';
+  import questionMark from '../assets/icons/questionMark.svg';
   import copyIcon from '../assets/icons/copy.svg';
   import checkIcon from '../assets/icons/check.png';
   import disconnectIcon from '../assets/icons/disconnect.svg';
@@ -22,6 +23,7 @@
   import NetworkSwitcher from './NetworkSwitcher.svelte';
   import DontHaveWallet from './DontHaveWallet.svelte';
   import GetAWallet from './GetAWallet.svelte';
+  import AboutWallets from './AboutWallets.svelte';
 
   export let config: Config<
     PublicClient<FallbackTransport>,
@@ -42,7 +44,7 @@
 
   function closeModal() {
     showModal = false;
-    dontHaveWallet = false;
+    goBack();
   }
 
   let isDisconnecting = false;
@@ -68,10 +70,18 @@
   $: address = $walletStore.address;
   $: status = $walletStore.status;
 
+  let aboutWallets = false;
   let dontHaveWallet = false;
 
+  function handleAboutWallets() {
+    aboutWallets = true;
+  }
   function handleGetAWallet() {
-    dontHaveWallet = !dontHaveWallet;
+    dontHaveWallet = true;
+  }
+  function goBack() {
+    aboutWallets = false;
+    dontHaveWallet = false;
   }
 </script>
 
@@ -99,15 +109,21 @@
 <Modal {showModal} on:close={closeModal}>
   <div class="dark:text-white">
     <div class="flex items-center justify-between mb-6">
-      {#if dontHaveWallet}
+      {#if dontHaveWallet || aboutWallets}
         <button
           class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
-          on:click={handleGetAWallet}
+          on:click={goBack}
         >
           <img class="w-3 h-3 m-auto" src={leftArrow} alt="x-button" />
         </button>
       {:else}
-        <div class="w-3" />
+        <!-- <div class="w-3" /> -->
+        <button
+          class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
+          on:click={handleAboutWallets}
+        >
+          <img class="w-[18px] h-[18px] m-auto" src={questionMark} alt="x-button" />
+        </button>
       {/if}
       <h2 class="text-xl font-semibold">
         {status === 'connecting'
@@ -186,6 +202,8 @@
       </div>
     {:else if dontHaveWallet}
       <GetAWallet />
+    {:else if aboutWallets}
+      <AboutWallets />
     {:else}
       <Connectors {config} {closeModal} {fetchAndSetEnsData} />
       <DontHaveWallet {handleGetAWallet} />
