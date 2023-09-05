@@ -75,7 +75,7 @@
 <div class="flex flex-col gap-4">
   {#each [...config.connectors] as connector, index}
     <button
-      class="bg-[#383838] hover:bg-white hover:bg-opacity-10 text-white px-3 py-2 rounded-2xl"
+      class="bg-light-button hover:bg-opacity-[60%] dark:bg-[#383838] dark:hover:bg-white dark:hover:bg-opacity-10 dark:text-white px-3 py-2 rounded-2xl"
       on:click={() => connectWallet(index)}
     >
       <div class="flex justify-between items-center p-2">

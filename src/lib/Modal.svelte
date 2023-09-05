@@ -32,7 +32,7 @@
     on:click={e => e.stopPropagation()}
     on:keydown={e => e.stopPropagation()}
     tabindex="0"
-    class="relative p-6 mx-auto mt-48 bg-[#2B2B2B] rounded-3xl w-11/12 md:w-6/12 lg:w-3/12 cursor-default"
+    class="relative p-6 mx-auto mt-48 bg-white dark:bg-[#2B2B2B] rounded-3xl w-11/12 md:w-6/12 lg:w-3/12 cursor-default"
   >
     <slot />
   </div>

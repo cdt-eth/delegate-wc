@@ -13,13 +13,13 @@
     type Config,
     type PublicClient,
     type WebSocketPublicClient,
-    getAccount,
     fetchBalance,
   } from '@wagmi/core';
   import type { FallbackTransport } from 'viem';
   import Spinner from './Spinner.svelte';
   import Connectors from './Connectors.svelte';
   import NetworkSwitcher from './NetworkSwitcher.svelte';
+  import GetAWallet from './GetAWallet.svelte';
 
   export let config: Config<
     PublicClient<FallbackTransport>,
@@ -41,8 +41,6 @@
   function closeModal() {
     showModal = false;
   }
-
-  const account = getAccount();
 
   let isDisconnecting = false;
   async function handleDisconnect() {
@@ -70,7 +68,7 @@
 
 <button
   on:click={openModal}
-  class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
+  class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[50%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if status === 'connecting'}
     <Spinner size="16px" color="#fff" />
@@ -90,7 +88,7 @@
 </button>
 
 <Modal {showModal} on:close={closeModal}>
-  <div class="text-white">
+  <div class="dark:text-white">
     <div class="flex items-center justify-between mb-6">
       <div class="w-3" />
       <h2 class="text-xl font-semibold">
@@ -98,7 +96,7 @@
       </h2>
 
       <button
-        class="text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-[#333333] hover:rounded-full"
+        class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-[#333333] hover:rounded-full"
         on:click={closeModal}
       >
         <img class="w-3 h-3 m-auto" src={xButton} alt="x-button" />
@@ -168,6 +166,8 @@
       <Connectors {config} {closeModal} {fetchAndSetEnsData} />
     {/if}
   </div>
+
+  <GetAWallet />
 </Modal>
 
 <style>
