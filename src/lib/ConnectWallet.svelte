@@ -1,24 +1,29 @@
 <script lang="ts">
   import Modal from './Modal.svelte';
   import { walletStore, disconnectWallet } from './stores/WalletStore';
-  import metamaskLogo from '../assets/metamask.svg';
   import blockie from '../assets/blockie.png';
+  import metamaskLogo from '../assets/metamask.svg';
   import walletConnectLogo from '../assets/walletconnectLogo.png';
-  import xButton from '../assets/xButton.svg';
-  import copyIcon from '../assets/copy.svg';
-  import checkIcon from '../assets/check.png';
-  import disconnectIcon from '../assets/disconnect.svg';
+  import xButton from '../assets/icons/xButton.svg';
+  import leftArrow from '../assets/icons/leftArrow.svg';
+  import questionMark from '../assets/icons/questionMark.svg';
+  import copyIcon from '../assets/icons/copy.svg';
+  import checkIcon from '../assets/icons/check.png';
+  import disconnectIcon from '../assets/icons/disconnect.svg';
   import {
     connect,
     type Config,
     type PublicClient,
     type WebSocketPublicClient,
-    getAccount,
     fetchBalance,
   } from '@wagmi/core';
   import type { FallbackTransport } from 'viem';
   import Spinner from './Spinner.svelte';
+  import Connectors from './Connectors.svelte';
   import NetworkSwitcher from './NetworkSwitcher.svelte';
+  import DontHaveWallet from './DontHaveWallet.svelte';
+  import GetAWallet from './GetAWallet.svelte';
+  import AboutWallets from './AboutWallets.svelte';
 
   export let config: Config<
     PublicClient<FallbackTransport>,
@@ -28,9 +33,10 @@
     address: `0x${string}`,
   ) => Promise<{ ensName: null; avatarUrl: null }>;
 
-  export let trimEthAddress: (address: string) => string;
+  const trimEthAddress = (address: string) =>
+    [address.slice(0, 5), address.slice(address.length - 4)].join('...');
 
-  let showModal = false;
+  let showModal = true;
 
   function openModal() {
     showModal = true;
@@ -38,55 +44,7 @@
 
   function closeModal() {
     showModal = false;
-  }
-
-  function getWalletIcon(index: number) {
-    switch (index) {
-      case 0:
-        return metamaskLogo;
-      case 1:
-        return walletConnectLogo;
-      default:
-        return walletConnectLogo;
-    }
-  }
-
-  const account = getAccount();
-  async function connectWallet(index: number) {
-    try {
-      walletStore.update(state => ({
-        ...state,
-        status: 'connecting',
-
-        connector: config.connectors[index].name,
-      }));
-
-      const result = await connect({
-        connector: config.connectors[index],
-      });
-      console.log('Connected successfully:', result);
-
-      const ensData = await fetchAndSetEnsData(result.account);
-      const balance = await fetchBalance({ address: result.account as `0x${string}` });
-      const formattedBalance = parseFloat(balance.formatted).toFixed(
-        Math.min(4, (balance.formatted.split('.')[1] || '').length),
-      );
-
-      walletStore.update(state => ({
-        ...state,
-        address: result.account,
-        chain: result.connector?.chains[0].name,
-        status: 'connected',
-        balance: formattedBalance + ' ' + balance.symbol,
-        ...ensData,
-      }));
-
-      console.log('Connected walletStore:', walletStore);
-
-      closeModal();
-    } catch (error) {
-      console.error('Error connecting:', error);
-    }
+    goBack();
   }
 
   let isDisconnecting = false;
@@ -111,11 +69,25 @@
 
   $: address = $walletStore.address;
   $: status = $walletStore.status;
+
+  let aboutWallets = false;
+  let dontHaveWallet = false;
+
+  function handleAboutWallets() {
+    aboutWallets = true;
+  }
+  function handleGetAWallet() {
+    dontHaveWallet = true;
+  }
+  function goBack() {
+    aboutWallets = false;
+    dontHaveWallet = false;
+  }
 </script>
 
 <button
   on:click={openModal}
-  class="rounded-lg border border-transparent px-4 py-3 text-base font-semibold bg-[#383838] hover:bg-white hover:bg-opacity-10 cursor-pointer transition-border-color duration-200 focus:outline-none"
+  class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[60%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if status === 'connecting'}
     <Spinner size="16px" color="#fff" />
@@ -130,20 +102,39 @@
       {address && ($walletStore.ensName ? $walletStore.ensName : trimEthAddress(address))}
     </div>
   {:else}
-    Connect
+    Connect Wallet
   {/if}
 </button>
 
 <Modal {showModal} on:close={closeModal}>
-  <div class="text-white">
+  <div class="dark:text-white">
     <div class="flex items-center justify-between mb-6">
-      <div class="w-3" />
+      {#if dontHaveWallet || aboutWallets}
+        <button
+          class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
+          on:click={goBack}
+        >
+          <img class="w-3 h-3 m-auto" src={leftArrow} alt="x-button" />
+        </button>
+      {:else}
+        <!-- <div class="w-3" /> -->
+        <button
+          class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
+          on:click={handleAboutWallets}
+        >
+          <img class="w-[18px] h-[18px] m-auto" src={questionMark} alt="x-button" />
+        </button>
+      {/if}
       <h2 class="text-xl font-semibold">
-        {status === 'connecting' ? $walletStore.connector : 'Connect Wallet'}
+        {status === 'connecting'
+          ? $walletStore.connector
+          : dontHaveWallet
+          ? 'Get A Wallet'
+          : 'Connect Wallet'}
       </h2>
 
       <button
-        class="text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-[#333333] hover:rounded-full"
+        class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
         on:click={closeModal}
       >
         <img class="w-3 h-3 m-auto" src={xButton} alt="x-button" />
@@ -209,22 +200,13 @@
           Disconnect
         </button>
       </div>
+    {:else if dontHaveWallet}
+      <GetAWallet />
+    {:else if aboutWallets}
+      <AboutWallets />
     {:else}
-      <!-- Connectors -->
-      <div class="flex flex-col gap-4">
-        {#each [...config.connectors] as connector, index}
-          <button
-            class="bg-[#383838] hover:bg-white hover:bg-opacity-10 text-white px-3 py-2 rounded-2xl"
-            on:click={() => connectWallet(index)}
-          >
-            <div class="flex justify-between items-center p-2">
-              <p class="font-semibold text-lg">{connector.name}</p>
-
-              <img class="h-8 w-8" src={getWalletIcon(index)} alt={connector.name} />
-            </div>
-          </button>
-        {/each}
-      </div>
+      <Connectors {config} {closeModal} {fetchAndSetEnsData} />
+      <DontHaveWallet {handleGetAWallet} />
     {/if}
   </div>
 </Modal>

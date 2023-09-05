@@ -3,7 +3,7 @@
   import ethereumLogo from '../assets/chains/ethereum.svg';
   import polygonLogo from '../assets/chains/polygon.svg';
   import zoraLogo from '../assets/chains/zora.png';
-  import downArrowIcon from '../assets/downArrowIcon.svg';
+  import downArrowIcon from '../assets/icons/downArrow.svg';
   import { walletStore } from './stores/WalletStore';
 
   let isOpen: boolean = false;
