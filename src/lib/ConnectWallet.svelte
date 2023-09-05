@@ -4,10 +4,10 @@
   import metamaskLogo from '../assets/metamask.svg';
   import blockie from '../assets/blockie.png';
   import walletConnectLogo from '../assets/walletconnectLogo.png';
-  import xButton from '../assets/xButton.svg';
-  import copyIcon from '../assets/copy.svg';
-  import checkIcon from '../assets/check.png';
-  import disconnectIcon from '../assets/disconnect.svg';
+  import xButton from '../assets/icons/xButton.svg';
+  import copyIcon from '../assets/icons/copy.svg';
+  import checkIcon from '../assets/icons/check.png';
+  import disconnectIcon from '../assets/icons/disconnect.svg';
   import {
     connect,
     type Config,
@@ -28,7 +28,8 @@
     address: `0x${string}`,
   ) => Promise<{ ensName: null; avatarUrl: null }>;
 
-  export let trimEthAddress: (address: string) => string;
+  const trimEthAddress = (address: string) =>
+    [address.slice(0, 5), address.slice(address.length - 4)].join('...');
 
   let showModal = false;
 
@@ -115,7 +116,7 @@
 
 <button
   on:click={openModal}
-  class="rounded-lg border border-transparent px-4 py-3 text-base font-semibold bg-[#383838] hover:bg-white hover:bg-opacity-10 cursor-pointer transition-border-color duration-200 focus:outline-none"
+  class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if status === 'connecting'}
     <Spinner size="16px" color="#fff" />
@@ -130,7 +131,7 @@
       {address && ($walletStore.ensName ? $walletStore.ensName : trimEthAddress(address))}
     </div>
   {:else}
-    Connect
+    Connect Wallet
   {/if}
 </button>
 

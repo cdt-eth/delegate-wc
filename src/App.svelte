@@ -1,5 +1,5 @@
 <script lang="ts">
-  import delegateLogo from './assets/logo.svg';
+  import Toggle from './lib/Toggle.svelte';
   import { walletStore } from './lib/stores/WalletStore';
   import ConnectWallet from './lib/ConnectWallet.svelte';
   import {
@@ -148,45 +148,9 @@
       }));
     }
   });
-
-  export const trimEthAddress = (address: string) =>
-    [address.slice(0, 5), address.slice(address.length - 4)].join('...');
 </script>
 
-<main class="w-full m-auto flex flex-col gap-8">
-  <div class="p-2 flex items-center m-auto w-full justify-center gap-4">
-    <a class="cursor-default p-2" href="https://delegate.xyz/" target="_blank" rel="noreferrer">
-      <img
-        id="logo"
-        class="logo h-24 p-6 transition duration-300 m-auto cursor-pointer"
-        src={delegateLogo}
-        alt="Delegate Logo"
-        style="padding: 1.5em;"
-      />
-    </a>
-
-    <ConnectWallet {config} {fetchAndSetEnsData} {trimEthAddress} />
-  </div>
-
-  {#if status === 'connected'}
-    <div>
-      <p class="text-3xl">
-        Welcome, {address &&
-          ($walletStore.ensName ? $walletStore.ensName : trimEthAddress(address))}!
-      </p>
-
-      <p class="text-[#888] pt-3 m-auto text-xl italic">
-        You are {status} to {$walletStore.chain}.
-      </p>
-    </div>
-  {:else}
-    <div>
-      <p class="text-4xl">Secure your onchain identity</p>
-
-      <p class="text-[#888] pt-3 m-auto">
-        Keep your vaulted NFTs and ERC20s safe by linking wallets together. Claim airdrops, prove
-        token ownership, and more from you r hot wallet.
-      </p>
-    </div>
-  {/if}
+<main class="flex gap-2 ml-20">
+  <ConnectWallet {config} {fetchAndSetEnsData} />
+  <Toggle />
 </main>
