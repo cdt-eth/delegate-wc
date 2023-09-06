@@ -240,7 +240,6 @@
         <div class="w-max m-auto">
           <div class="flex items-center relative">
             <img
-              style=""
               class="rounded-full h-24 w-24 m-auto"
               src={$walletStore.avatarUrl || blockie}
               alt="avatar"
