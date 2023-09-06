@@ -44,6 +44,7 @@
   } from '@wagmi/core/chains';
   import { onMount } from 'svelte';
   import { getAccount } from '@wagmi/core';
+  import { get } from 'svelte/store';
 
   const { chains, publicClient, webSocketPublicClient } = configureChains(
     [
@@ -119,33 +120,37 @@
   }
 
   onMount(async () => {
-    walletStore.update(state => ({
-      ...state,
-      status: 'connecting',
-    }));
+    const currentState = get(walletStore);
 
-    if (account.isConnected) {
-      const ensData = await fetchAndSetEnsData(account.address as `0x${string}`);
-      const balance = await fetchBalance({ address: account.address as `0x${string}` });
-      const formattedBalance = parseFloat(balance.formatted).toFixed(
-        Math.min(4, (balance.formatted.split('.')[1] || '').length),
-      );
-
+    if (currentState.status !== 'connected') {
       walletStore.update(state => ({
         ...state,
-        address: account.address as `0x${string}`,
-        chain: chain?.name,
-        status: 'connected',
-        balance: formattedBalance + ' ' + balance.symbol,
-        ...ensData,
+        status: 'connecting',
       }));
-    } else {
-      walletStore.update(state => ({
-        ...state,
-        address: null,
-        chain: chain?.name,
-        status: 'disconnected',
-      }));
+
+      if (account.isConnected) {
+        const ensData = await fetchAndSetEnsData(account.address as `0x${string}`);
+        const balance = await fetchBalance({ address: account.address as `0x${string}` });
+        const formattedBalance = parseFloat(balance.formatted).toFixed(
+          Math.min(4, (balance.formatted.split('.')[1] || '').length),
+        );
+
+        walletStore.update(state => ({
+          ...state,
+          address: account.address as `0x${string}`,
+          chain: chain?.name,
+          status: 'connected',
+          balance: formattedBalance + ' ' + balance.symbol,
+          ...ensData,
+        }));
+      } else {
+        walletStore.update(state => ({
+          ...state,
+          address: null,
+          chain: chain?.name,
+          status: 'disconnected',
+        }));
+      }
     }
   });
 </script>
