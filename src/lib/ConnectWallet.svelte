@@ -154,6 +154,13 @@
   function handleXButton() {
     closeModal();
     if (status !== 'connected') resetModalState();
+    isOpen = false;
+  }
+
+  let isOpen: boolean = false;
+
+  function toggleDropdown(): void {
+    isOpen = !isOpen;
   }
 </script>
 
@@ -178,7 +185,7 @@
   {/if}
 </button>
 
-<Modal {showModal} on:close={closeModal}>
+<Modal {showModal} on:close={handleXButton}>
   <div class="dark:text-white">
     <div class="flex items-center justify-between mb-6">
       {#if dontHaveWallet || aboutWallets || $walletStore.status === 'connecting'}
@@ -239,7 +246,7 @@
               alt="avatar"
             />
 
-            <NetworkSwitcher />
+            <NetworkSwitcher {config} {isOpen} {toggleDropdown} />
           </div>
         </div>
         <div />
