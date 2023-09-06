@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { darkMode } from './stores/DarkModeStore';
+
   export let handleGetAWallet: () => void;
 </script>
 
@@ -22,11 +24,13 @@
       class="on-hover"
       d="M1 4.79293C1 2.435 3.31004 0.770014 5.54697 1.51566L12.4561 3.81869C13.8667 4.2889 14.8182 5.60901 14.8182 7.09596V13.6313C14.8182 15.9892 12.5081 17.6542 10.2712 16.9086L3.36212 14.6056C1.95149 14.1353 1 12.8152 1 11.3283V4.79293Z"
       stroke="currentColor"
-      fill="#fff"
+      fill={$darkMode ? '#000' : '#fff'}
       stroke-width="2"
     />
-    <circle cx="10.3863" cy="10.1894" r="1.32574" fill="currentColor" /></svg
+    <circle class="circleClosed" cx="14.3863" cy="8" r="1.32574" fill="currentColor" />
+    <circle class="circleOpen" cx="10.3863" cy="10.1894" r="1.32574" fill="currentColor" /></svg
   >
+
   <p class="font-semibold pb-1">I don't have a wallet</p>
 </button>
 
@@ -38,6 +42,15 @@
   button:hover .on-hover {
     opacity: 1;
     color: #000;
+  }
+  button:hover .circleClosed {
+    opacity: 0;
+  }
+  .circleOpen {
+    opacity: 0;
+  }
+  button:hover .circleOpen {
+    opacity: 1;
   }
   button:hover :is(svg, p) {
     color: #000;
