@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 
 export const defaultState = {
-  title: 'Requesting Connection',
+  title: 'Requesting Connection via MetaMask',
   subtitle: 'Open the Metamask browser extension to connect your wallet.',
   showSpinner: true,
   errorCircle: false,
@@ -24,4 +24,4 @@ export const errorState = {
   shakeAnimation: true,
 };
 
-export const metamaskStateStore = writable(defaultState);
+export const connectRequestStore = writable(defaultState);

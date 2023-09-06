@@ -1,6 +1,9 @@
 <script lang="ts">
   import { writable } from 'svelte/store';
-  import { defaultState, metamaskStateStore } from './stores/MetamaskStore';
+  import { defaultState, connectRequestStore } from './stores/ConnectRequestStore';
+  import { walletStore } from './stores/WalletStore';
+  import type { FallbackTransport } from 'viem';
+  import { type Config, type PublicClient, type WebSocketPublicClient } from '@wagmi/core';
 
   export let size = '50px';
   export let color = '#1A88F8';
@@ -8,6 +11,10 @@
   export let showSpinner = true;
   export let errorCircle = false;
   export let connectWallet: (index: number) => void;
+  export let config: Config<
+    PublicClient<FallbackTransport>,
+    WebSocketPublicClient<FallbackTransport>
+  >;
 
   const hideErrorCircle = writable(false);
   const showRetryButton = writable(false);
@@ -24,11 +31,13 @@
     }
   }
 
-  function resetMetamaskState() {
-    metamaskStateStore.set(defaultState);
+  function retryWalletConnectionRequest() {
+    connectRequestStore.set(defaultState);
     hideErrorCircle.set(false);
     showRetryButton.set(false);
-    connectWallet(0);
+    connectWallet(
+      config.connectors.findIndex(connector => connector.name === $walletStore.connector)!,
+    );
   }
 </script>
 
@@ -51,7 +60,7 @@
     {#if $showRetryButton}
       <div class="retryButton absolute bottom-0 right-0">
         <button
-          on:click={resetMetamaskState}
+          on:click={retryWalletConnectionRequest}
           class="flex items-center gap-1 bg-black border border-black dark:bg-[#333333] -mr-6 rounded-full shadow"
         >
           <svg

@@ -26,9 +26,9 @@
   import {
     defaultState,
     errorState,
-    metamaskStateStore,
+    connectRequestStore,
     revisitingState,
-  } from './stores/MetamaskStore';
+  } from './stores/ConnectRequestStore';
 
   export let config: Config<
     PublicClient<FallbackTransport>,
@@ -89,7 +89,7 @@
     aboutWallets = false;
     dontHaveWallet = false;
     walletStore.set(initialState);
-    metamaskStateStore.set(defaultState);
+    connectRequestStore.set(defaultState);
   }
 
   async function connectWallet(index: number) {
@@ -103,10 +103,10 @@
 
       if (config.connectors[index].name === 'Metamask') {
         setTimeout(() => {
-          if ($metamaskStateStore.errorCircle) {
-            metamaskStateStore.set(errorState);
+          if ($connectRequestStore.errorCircle) {
+            connectRequestStore.set(errorState);
           } else {
-            metamaskStateStore.set(revisitingState);
+            connectRequestStore.set(revisitingState);
           }
         }, 2000);
       }
@@ -146,7 +146,7 @@
 
       closeModal();
     } catch (error) {
-      metamaskStateStore.set(errorState);
+      connectRequestStore.set(errorState);
 
       console.error('Error connecting:', error);
     }
@@ -169,7 +169,7 @@
   class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[60%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if $walletStore.status === 'connecting'}
-    <Spinner size="16px" color={$darkMode ? '#fff' : '#000'} {connectWallet} />
+    <Spinner size="16px" color={$darkMode ? '#fff' : '#000'} {connectWallet} {config} />
   {:else if $walletStore.status === 'connected'}
     <div class="flex items-center">
       <img
@@ -224,17 +224,16 @@
         size="100px"
         color="#1A88F8"
         image={$walletStore.connector === 'Metamask' ? metamaskLogo : walletConnectLogo}
-        showSpinner={$metamaskStateStore.showSpinner}
-        errorCircle={$metamaskStateStore.errorCircle}
+        showSpinner={$connectRequestStore.showSpinner}
+        errorCircle={$connectRequestStore.errorCircle}
         {connectWallet}
+        {config}
       />
 
-      {#if $walletStore.connector === 'Metamask'}
-        <div class="mt-4 flex flex-col gap-2">
-          <p class="title">{$metamaskStateStore.title}</p>
-          <p class="subtitle">{$metamaskStateStore.subtitle}</p>
-        </div>
-      {/if}
+      <div class="mt-4 flex flex-col gap-2">
+        <p class="title">{$connectRequestStore.title}</p>
+        <p class="subtitle">{$connectRequestStore.subtitle}</p>
+      </div>
     {:else if status !== 'disconnected'}
       <div class="flex flex-col gap-6">
         <div class="w-max m-auto">
