@@ -55,7 +55,6 @@
   button:hover :is(svg, p) {
     color: #000;
   }
-
   .dark button:hover :is(svg, p),
   .dark button:hover .on-hover {
     color: #fff;
