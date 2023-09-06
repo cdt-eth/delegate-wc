@@ -5,6 +5,7 @@
   import zoraLogo from '../assets/chains/zora.png';
   import downArrowIcon from '../assets/icons/downArrow.svg';
   import { walletStore } from './stores/WalletStore';
+  import { darkMode } from './stores/DarkModeStore';
 
   let isOpen: boolean = false;
   let selectedOption: string | null = 'Ethereum';
@@ -49,7 +50,7 @@
 <div class="dropdown absolute bottom-0 right-0">
   <button
     on:click={toggleDropdown}
-    class="flex items-center gap-1 bg-[#333333] p-1 -mr-6 rounded-full"
+    class="flex items-center gap-1 bg-white border border-light-button dark:bg-[#333333] dark:border-[#333333] p-1 -mr-6 rounded-full"
   >
     <img
       src={selectedOption
@@ -63,7 +64,7 @@
   </button>
   <div
     style={isOpen ? 'display: flex;' : ''}
-    class="dropdown-content rounded-xl w-max p-3 bg-[#383838] absolute max-h-[300px] overflow-auto text-left flex flex-col gap-1"
+    class="dropdown-content rounded-xl w-max p-3 bg-white dark:bg-[#383838] absolute max-h-[300px] overflow-auto text-left flex flex-col gap-1"
   >
     <p class="text-[#888]">Switch Networks</p>
     {#each options as option}
