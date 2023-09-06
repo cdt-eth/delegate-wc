@@ -1,5 +1,5 @@
 <script>
-  import { darkMode } from './stores/DarkMode';
+  import { darkMode } from './stores/DarkModeStore';
 
   function enableLightMode() {
     darkMode.set(false);

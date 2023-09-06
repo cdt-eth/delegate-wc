@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkMode } from './stores/DarkMode';
+  import { darkMode } from './stores/DarkModeStore';
 
   let currentSlide = 1;
 

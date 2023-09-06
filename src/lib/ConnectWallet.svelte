@@ -24,6 +24,13 @@
   import DontHaveWallet from './DontHaveWallet.svelte';
   import GetAWallet from './GetAWallet.svelte';
   import AboutWallets from './AboutWallets.svelte';
+  import { darkMode } from './stores/DarkModeStore';
+  import {
+    defaultState,
+    errorState,
+    metamaskStateStore,
+    revisitingState,
+  } from './stores/MetamaskStore';
 
   export let config: Config<
     PublicClient<FallbackTransport>,
@@ -48,6 +55,7 @@
   }
 
   let isDisconnecting = false;
+
   async function handleDisconnect() {
     isDisconnecting = true;
     await disconnectWallet();
