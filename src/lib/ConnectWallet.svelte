@@ -91,6 +91,56 @@
     aboutWallets = false;
     dontHaveWallet = false;
     walletStore.set(initialState);
+    metamaskStateStore.set(defaultState);
+  }
+
+  async function connectWallet(index: number) {
+    try {
+      walletStore.update(state => ({
+        ...state,
+        status: 'connecting',
+
+        connector: config.connectors[index].name,
+      }));
+
+      if (config.connectors[index].name === 'Metamask') {
+        setTimeout(() => {
+          if ($metamaskStateStore.errorCircle) {
+            metamaskStateStore.set(errorState);
+          } else {
+            metamaskStateStore.set(revisitingState);
+          }
+        }, 2000);
+      }
+
+      const result = await connect({
+        connector: config.connectors[index],
+      });
+      console.log('Connected successfully:', result);
+
+      const ensData = await fetchAndSetEnsData(result.account);
+      const balance = await fetchBalance({ address: result.account as `0x${string}` });
+      const formattedBalance = parseFloat(balance.formatted).toFixed(
+        Math.min(4, (balance.formatted.split('.')[1] || '').length),
+      );
+
+      walletStore.update(state => ({
+        ...state,
+        address: result.account,
+        chain: result.connector?.chains[0].name,
+        status: 'connected',
+        balance: formattedBalance + ' ' + balance.symbol,
+        ...ensData,
+      }));
+
+      console.log('Connected walletStore:', walletStore);
+
+      closeModal();
+    } catch (error) {
+      metamaskStateStore.set(errorState);
+
+      console.error('Error connecting:', error);
+    }
   }
 </script>
 
@@ -99,7 +149,7 @@
   class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[60%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if status === 'connecting'}
-    <Spinner size="16px" color="#fff" />
+    <Spinner size="16px" color={$darkMode ? '#fff' : '#000'} {connectWallet} />
   {:else if status === 'connected'}
     <div class="flex items-center">
       <img
@@ -213,7 +263,7 @@
     {:else if aboutWallets}
       <AboutWallets />
     {:else}
-      <Connectors {config} {closeModal} {fetchAndSetEnsData} />
+      <Connectors {config} {connectWallet} />
       <DontHaveWallet {handleGetAWallet} />
     {/if}
   </div>
