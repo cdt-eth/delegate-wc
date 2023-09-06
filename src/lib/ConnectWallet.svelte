@@ -43,7 +43,7 @@
   const trimEthAddress = (address: string) =>
     [address.slice(0, 5), address.slice(address.length - 4)].join('...');
 
-  let showModal = true;
+  let showModal = false;
 
   function openModal() {
     showModal = true;
