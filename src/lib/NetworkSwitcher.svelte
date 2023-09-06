@@ -54,7 +54,7 @@
   >
     <img
       src={selectedOption
-        ? options.filter(option => option.name === selectedOption)[0].logo
+        ? options.filter(option => option.name === $walletStore.chain)[0].logo
         : ethereumLogo}
       class="h-5 w-5 rounded-full"
       alt="network"
@@ -70,7 +70,7 @@
     {#each options as option}
       <div
         class={`flex gap-12 p-2 ${
-          selectedOption === option.name ? 'bg-[#00b3ff] bg-opacity-10 rounded-xl' : ''
+          $walletStore.chain === option.name ? 'bg-[#00b3ff] bg-opacity-10 rounded-xl' : ''
         }`}
       >
         <button class="flex items-center gap-2" on:click={() => selectOption(option)}>
@@ -78,7 +78,7 @@
           {option.name}
         </button>
 
-        {#if selectedOption === option.name}
+        {#if $walletStore.chain === option.name}
           <div class="text-[#008AFF]">Connected</div>
         {/if}
       </div>

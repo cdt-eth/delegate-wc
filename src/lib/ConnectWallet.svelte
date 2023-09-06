@@ -7,7 +7,6 @@
   import xButton from '../assets/icons/xButton.svg';
   import leftArrow from '../assets/icons/leftArrow.svg';
   import questionMark from '../assets/icons/questionMark.svg';
-
   import checkIcon from '../assets/icons/check.png';
   import {
     connect,
@@ -206,7 +205,7 @@
       </h2>
 
       <button
-        class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
+        class="w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] dark:text-white hover:rounded-full"
         on:click={handleXButton}
       >
         <img class="w-3 h-3 m-auto" src={xButton} alt="x-button" />
