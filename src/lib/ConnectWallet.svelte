@@ -202,16 +202,25 @@
     {#if status === 'connecting' || isDisconnecting}
       <Spinner
         size="100px"
-        color="#333"
+        color="#1A88F8"
         image={$walletStore.connector === 'Metamask' ? metamaskLogo : walletConnectLogo}
+        showSpinner={$metamaskStateStore.showSpinner}
+        errorCircle={$metamaskStateStore.errorCircle}
+        {connectWallet}
       />
 
       {#if $walletStore.connector === 'Metamask'}
-        <div>
-          <p class="font-bold text-lg">Requesting Connection</p>
-          <p class="text-[#f3f3f3] text-sm">
-            Open the Metamask browser extension to connect your wallet.
-          </p>
+        <div class="mt-4 flex flex-col gap-2">
+          <p class="title">{$metamaskStateStore.title}</p>
+          <p class="subtitle">{$metamaskStateStore.subtitle}</p>
+
+          {#if $metamaskStateStore.errorCircle}
+            <!-- Logic for showing the red circle around the logo -->
+          {/if}
+
+          {#if $metamaskStateStore.shakeAnimation}
+            <!-- Logic for the shake animation -->
+          {/if}
         </div>
       {/if}
     {:else if status !== 'disconnected'}
@@ -241,7 +250,7 @@
               on:click={() => copyToClipboard($walletStore.address)}
             >
               {#if copied}
-                <img class="ccheckopy w-5 h-5 cursor-pointer" src={checkIcon} alt="copied-icon" />
+                <img class="copy w-5 h-5 cursor-pointer" src={checkIcon} alt="copied-icon" />
               {:else}
                 <img class="copy w-5 h-5 cursor-pointer" src={copyIcon} alt="copy-icon" />
               {/if}
@@ -278,5 +287,16 @@
   }
   .copy:hover {
     opacity: 1;
+  }
+  .title {
+    line-height: 20px;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .subtitle {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 21px;
+    color: #999;
   }
 </style>
