@@ -51,7 +51,6 @@
 
   function closeModal() {
     showModal = false;
-    goBack();
   }
 
   let isDisconnecting = false;
@@ -61,6 +60,7 @@
     await disconnectWallet();
     isDisconnecting = false;
     closeModal();
+    resetModalState();
   }
 
   let copied = false;
@@ -87,7 +87,7 @@
   function handleGetAWallet() {
     dontHaveWallet = true;
   }
-  function goBack() {
+  function resetModalState() {
     aboutWallets = false;
     dontHaveWallet = false;
     walletStore.set(initialState);
@@ -124,16 +124,27 @@
         Math.min(4, (balance.formatted.split('.')[1] || '').length),
       );
 
-      walletStore.update(state => ({
-        ...state,
-        address: result.account,
-        chain: result.connector?.chains[0].name,
-        status: 'connected',
-        balance: formattedBalance + ' ' + balance.symbol,
-        ...ensData,
-      }));
+      walletStore.update(state => {
+        console.log('Updating store with:', state);
+        console.log('updating', {
+          ...state,
+          address: result.account,
+          chain: result.connector?.chains[0].name,
+          status: 'connected',
+          balance: formattedBalance + ' ' + balance.symbol,
+          ...ensData,
+        });
+        return {
+          ...state,
+          address: result.account,
+          chain: result.connector?.chains[0].name,
+          status: 'connected',
+          balance: formattedBalance + ' ' + balance.symbol,
+          ...ensData,
+        };
+      });
 
-      console.log('Connected walletStore:', walletStore);
+      console.log('Connected walletStore:', $walletStore);
 
       closeModal();
     } catch (error) {
@@ -148,9 +159,9 @@
   on:click={openModal}
   class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[60%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
-  {#if status === 'connecting'}
+  {#if $walletStore.status === 'connecting'}
     <Spinner size="16px" color={$darkMode ? '#fff' : '#000'} {connectWallet} />
-  {:else if status === 'connected'}
+  {:else if $walletStore.status === 'connected'}
     <div class="flex items-center">
       <img
         src={$walletStore.avatarUrl ? $walletStore.avatarUrl : blockie}
@@ -171,7 +182,7 @@
       {#if dontHaveWallet || aboutWallets || $walletStore.status === 'connecting'}
         <button
           class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
-          on:click={goBack}
+          on:click={resetModalState}
         >
           <img class="w-3 h-3 m-auto" src={leftArrow} alt="x-button" />
         </button>
