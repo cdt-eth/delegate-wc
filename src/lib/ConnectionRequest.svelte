@@ -5,7 +5,7 @@
   import type { FallbackTransport } from 'viem';
   import { type Config, type PublicClient, type WebSocketPublicClient } from '@wagmi/core';
 
-  export let size = '50px';
+  export let size = '100px';
   export let color = '#1A88F8';
   export let image = '';
   export let showSpinner = true;
@@ -15,6 +15,7 @@
     PublicClient<FallbackTransport>,
     WebSocketPublicClient<FallbackTransport>
   >;
+  export let qrCodeUrl: string;
 
   const hideErrorCircle = writable(false);
   const showRetryButton = writable(false);
@@ -42,7 +43,7 @@
 </script>
 
 <div
-  class={`spinner-container ${errorCircle ? 'shake' : ''}`}
+  class={`spinner-container  ${errorCircle ? 'shake' : ''}`}
   style="--size: {size}; --color: {color};"
   on:animationend={handleAnimationEnd}
 >
@@ -51,6 +52,12 @@
   {/if}
   {#if errorCircle}
     <div class={`error ${$hideErrorCircle ? 'hide' : ''}`} on:transitionend={handleErrorFadeOut} />
+  {/if}
+
+  {#if qrCodeUrl && $walletStore.connector !== 'Metamask'}
+    <div class="border rounded-xl border-[#f7f6f8] dark:border-[#383838]">
+      <img class="qrCode rounded-xl" src={qrCodeUrl} alt="WalletConnect QR Code" />
+    </div>
   {/if}
 
   {#if image}
@@ -135,6 +142,9 @@
   }
   .hide {
     opacity: 0;
+  }
+  .qrCode {
+    width: 100%;
   }
   @keyframes spin {
     0% {

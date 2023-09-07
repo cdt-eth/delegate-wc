@@ -3,7 +3,6 @@
   import { walletStore, disconnectWallet, initialState } from './stores/WalletStore';
   import blockie from '../assets/blockie.png';
   import metamaskLogo from '../assets/metamask.svg';
-  import walletConnectLogo from '../assets/walletconnectLogo.png';
   import xButton from '../assets/icons/xButton.svg';
   import leftArrow from '../assets/icons/leftArrow.svg';
   import questionMark from '../assets/icons/questionMark.svg';
@@ -14,9 +13,11 @@
     type PublicClient,
     type WebSocketPublicClient,
     fetchBalance,
+    Connector,
+    type ConnectArgs,
   } from '@wagmi/core';
   import type { FallbackTransport } from 'viem';
-  import Spinner from './Spinner.svelte';
+  import ConnectionRequest from './ConnectionRequest.svelte';
   import Connectors from './Connectors.svelte';
   import NetworkSwitcher from './NetworkSwitcher.svelte';
   import DontHaveWallet from './DontHaveWallet.svelte';
@@ -109,6 +110,11 @@
             connectRequestStore.set(revisitingState);
           }
         }, 2000);
+      } else if (config.connectors[index].name === 'WalletConnect') {
+        await connectWalletConnect(async uri => {
+          await generateQRCode(uri);
+          qrCodeUri.set(uri);
+        });
       }
 
       const result = await connect({
@@ -123,15 +129,6 @@
       );
 
       walletStore.update(state => {
-        console.log('Updating store with:', state);
-        console.log('updating', {
-          ...state,
-          address: result.account,
-          chain: result.connector?.chains[0].name,
-          status: 'connected',
-          balance: formattedBalance + ' ' + balance.symbol,
-          ...ensData,
-        });
         return {
           ...state,
           address: result.account,
@@ -142,8 +139,6 @@
         };
       });
 
-      console.log('Connected walletStore:', $walletStore);
-
       closeModal();
     } catch (error) {
       connectRequestStore.set(errorState);
@@ -151,6 +146,48 @@
       console.error('Error connecting:', error);
     }
   }
+
+  import QRCode from 'qrcode';
+  import qrCodeUri from './stores/QrCode';
+
+  export let qrCodeUrl = '';
+
+  async function generateQRCode(uri: string) {
+    try {
+      qrCodeUrl = await QRCode.toDataURL(uri, {
+        color: {
+          dark: $darkMode ? '#ffffff' : '#2B2B2B',
+          light: $darkMode ? '#2B2B2B' : '#ffffff',
+        },
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function connectWalletConnect(onUri: (uri: string) => void, chainId?: number) {
+    const connector = config.connectors.find(connector => connector.name === 'WalletConnect')!;
+    const options: ConnectArgs = { connector };
+    if (chainId) {
+      options.chainId = chainId;
+    }
+
+    return Promise.all([connect(options), connectWalletConnectProvider(connector, onUri)]);
+  }
+
+  async function connectWalletConnectProvider(connector: Connector, onUri: (uri: string) => void) {
+    await connector.getProvider();
+
+    return new Promise<void>(resolve => {
+      connector.once('message', event => {
+        if (event.type === 'display_uri') {
+          onUri(event.data as string);
+          resolve();
+        }
+      });
+    });
+  }
+
   function handleXButton() {
     closeModal();
     if (status !== 'connected') resetModalState();
@@ -169,7 +206,13 @@
   class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[60%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if $walletStore.status === 'connecting'}
-    <Spinner size="16px" color={$darkMode ? '#fff' : '#000'} {connectWallet} {config} />
+    <ConnectionRequest
+      size="16px"
+      color={$darkMode ? '#fff' : '#000'}
+      {connectWallet}
+      {config}
+      {qrCodeUrl}
+    />
   {:else if $walletStore.status === 'connected'}
     <div class="flex items-center">
       <img
@@ -205,7 +248,9 @@
       {/if}
       <h2 class="text-xl font-semibold">
         {status === 'connecting'
-          ? $walletStore.connector
+          ? $walletStore.connector === 'Metamask'
+            ? 'Connect to Metamask'
+            : 'Scan with Phone'
           : dontHaveWallet
           ? 'Get A Wallet'
           : 'Connect Wallet'}
@@ -220,20 +265,60 @@
     </div>
 
     {#if status === 'connecting' || isDisconnecting}
-      <Spinner
-        size="100px"
+      <ConnectionRequest
+        size={$walletStore.connector === 'Metamask' ? '100px' : '100%'}
         color="#1A88F8"
-        image={$walletStore.connector === 'Metamask' ? metamaskLogo : walletConnectLogo}
-        showSpinner={$connectRequestStore.showSpinner}
+        image={$walletStore.connector === 'Metamask' ? metamaskLogo : undefined}
+        showSpinner={$walletStore.connector === 'Metamask' && $connectRequestStore.showSpinner}
         errorCircle={$connectRequestStore.errorCircle}
         {connectWallet}
         {config}
+        {qrCodeUrl}
       />
+      {#if $walletStore.connector === 'Metamask'}
+        <div class="mt-4 flex flex-col gap-2">
+          <p class="title">{$connectRequestStore.title}</p>
+          <p class="subtitle">{$connectRequestStore.subtitle}</p>
+        </div>
+      {:else}
+        <div class="mt-4 flex flex-col gap-2">
+          <div
+            class={`button-switcher ${
+              $darkMode ? 'darkMode' : ''
+            } before:bg-[#f7f6f8] before:dark:bg-[#383838]`}
+          >
+            <span class="bg-white dark:bg-[#2B2B2B] px-3.5 z-10"> or </span>
+          </div>
+        </div>
 
-      <div class="mt-4 flex flex-col gap-2">
-        <p class="title">{$connectRequestStore.title}</p>
-        <p class="subtitle">{$connectRequestStore.subtitle}</p>
-      </div>
+        <button
+          class="bg-light-button mt-3 hover:bg-opacity-[60%] dark:bg-[#383838] dark:hover:bg-white dark:hover:bg-opacity-10 w-full transition duration-300 dark:text-white p-3 rounded-2xl flex items-center justify-center gap-1 font-semibold"
+          on:click={() => copyToClipboard($qrCodeUri)}
+        >
+          <svg
+            aria-hidden="true"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            ><path
+              d="M14 9.5V7C14 5.89543 13.1046 5 12 5H7C5.89543 5 5 5.89543 5 7V12C5 13.1046 5.89543 14 7 14H9.5"
+              stroke={$darkMode ? '#fff' : '#999'}
+              stroke-width="2"
+            /><rect
+              x="10"
+              y="10"
+              width="9"
+              height="9"
+              rx="2"
+              stroke={$darkMode ? '#fff' : '#999'}
+              stroke-width="2"
+            />
+          </svg>
+          Copy to Clipboard
+        </button>
+      {/if}
     {:else if status !== 'disconnected'}
       <div class="flex flex-col gap-6">
         <div class="w-max m-auto">
@@ -343,5 +428,24 @@
     font-weight: 400;
     line-height: 21px;
     color: #999;
+  }
+  .button-switcher {
+    position: relative;
+    top: -1px;
+    display: flex;
+    justify-content: center;
+    pointer-events: auto;
+    z-index: 3;
+  }
+
+  .button-switcher::before {
+    z-index: 1;
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0px;
+    right: 0px;
+    height: 1px;
+    transform: translateY(-1px);
   }
 </style>
