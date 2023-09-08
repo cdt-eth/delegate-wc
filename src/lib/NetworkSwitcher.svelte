@@ -187,7 +187,7 @@
   >
     <img
       src={selectedOption
-        ? options.filter(option => option.name === $walletStore.chain)[0].logo
+        ? options.filter(option => option.name === $walletStore.chain)[0]?.logo || defaultLogo
         : ethereumLogo}
       class="h-5 w-5 rounded-full object-cover"
       alt="network"
