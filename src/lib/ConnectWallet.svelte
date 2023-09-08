@@ -293,7 +293,7 @@
       </button>
     </div>
 
-    {#if status === 'connecting' || isDisconnecting}
+    {#if status === 'connecting'}
       <ConnectionRequest
         size={$walletStore.connector === 'Metamask' ? '100px' : '100%'}
         color="#1A88F8"
