@@ -99,6 +99,7 @@
 
   async function connectWallet(index: number) {
     try {
+      // updating the walletStore state
       walletStore.update(state => ({
         ...state,
         status: 'connecting',
@@ -107,6 +108,7 @@
 
       if (config.connectors[index].name === 'Metamask') {
         setTimeout(() => {
+          // after 2 seconds, check for an error state or set the revisiting state
           if ($connectRequestStore.errorCircle) {
             connectRequestStore.set(errorState);
           } else {
@@ -114,24 +116,29 @@
           }
         }, 2000);
       } else if (config.connectors[index].name === 'WalletConnect') {
+        //  if 'WalletConnect', generate a QR code and set the uri
         await connectWalletConnect(async uri => {
           await generateQRCode(uri);
           qrCodeUri.set(uri);
         });
       }
 
+      // establish connection
       const result = await connect({
         connector: config.connectors[index],
       });
-      console.log('Connected successfully:', result);
 
+      // Fetch relevant data after successful connection
       const ensData = await fetchAndSetEnsData(result.account);
       const balance = await fetchBalance({ address: result.account as `0x${string}` });
+      // Format the balance 2-4 decimal places plus the symbol
       const formattedBalance = await parseFloat(balance.formatted).toFixed(
         Math.max(2, Math.min(4, (balance.formatted.split('.')[1] || '').length)),
       );
+
       const publicClient = getPublicClient();
 
+      // Update the walletStore state with new data after successful connection
       walletStore.update(state => {
         return {
           ...state,
@@ -165,15 +172,19 @@
     }
   }
 
+  // This function connects to the WalletConnect provider and handles URI creation
   async function connectWalletConnect(onUri: (uri: string) => void, chainId?: number) {
     const connector = config.connectors.find(connector => connector.name === 'WalletConnect')!;
     const options: ConnectArgs = { connector };
     if (chainId) {
       options.chainId = chainId;
     }
+    console.log('options', options);
 
+    // Initiate the connection and wait for both connect() and connectWalletConnectProvider() promises to resolve
     return Promise.all([connect(options), connectWalletConnectProvider(connector, onUri)]).then(
       async results => {
+        // Fetch relevant data after successful connection.
         const ensData = await fetchAndSetEnsData(results[0].account);
         const balance = await fetchBalance({ address: results[0].account as `0x${string}` });
         const formattedBalance = await parseFloat(balance.formatted).toFixed(
