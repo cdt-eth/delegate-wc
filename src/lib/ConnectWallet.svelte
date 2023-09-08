@@ -172,7 +172,32 @@
       options.chainId = chainId;
     }
 
-    return Promise.all([connect(options), connectWalletConnectProvider(connector, onUri)]);
+    return Promise.all([connect(options), connectWalletConnectProvider(connector, onUri)]).then(
+      async results => {
+        const ensData = await fetchAndSetEnsData(results[0].account);
+        const balance = await fetchBalance({ address: results[0].account as `0x${string}` });
+        const formattedBalance = await parseFloat(balance.formatted).toFixed(
+          Math.max(2, Math.min(4, (balance.formatted.split('.')[1] || '').length)),
+        );
+        const publicClient = getPublicClient();
+
+        walletStore.update(state => {
+          return {
+            ...state,
+            address: results[0].account,
+            chain: publicClient.chain.name,
+            chainId: publicClient.chain.id,
+            status: 'connected',
+            balance: formattedBalance + ' ' + balance.symbol,
+            provider: publicClient,
+            ...ensData,
+          };
+        });
+
+        closeModal();
+        return results;
+      },
+    );
   }
 
   async function connectWalletConnectProvider(connector: Connector, onUri: (uri: string) => void) {
