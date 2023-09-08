@@ -50,18 +50,28 @@
     <p class="subtitle">{slides[currentSlide - 1].subtitle}</p>
   </div>
 
-  <div class={`button-switcher ${$darkMode ? 'darkMode' : ''}`}>
-    <span class="buttonSpan">
+  <div
+    class={`button-switcher ${
+      $darkMode ? 'darkMode' : ''
+    }before:bg-[#f7f6f8] before:dark:bg-[#383838]`}
+  >
+    <span class="buttonSpan bg-white dark:bg-[#2B2B2B] px-3.5 z-10">
       <button
-        class="btn {currentSlide === 1 ? 'active' : ''}"
+        class="btn before:bg-[#373737] before:dark:bg-[#ffffff] {currentSlide === 1
+          ? 'active'
+          : ''}"
         on:click={() => (currentSlide = 1)}
       />
       <button
-        class="btn {currentSlide === 2 ? 'active' : ''}"
+        class="btn before:bg-[#373737] before:dark:bg-[#ffffff] {currentSlide === 2
+          ? 'active'
+          : ''}"
         on:click={() => (currentSlide = 2)}
       />
       <button
-        class="btn {currentSlide === 3 ? 'active' : ''}"
+        class="btn before:bg-[#373737] before:dark:bg-[#ffffff] {currentSlide === 3
+          ? 'active'
+          : ''}"
         on:click={() => (currentSlide = 3)}
       />
     </span>
@@ -112,7 +122,6 @@
     width: 16px;
     height: 3px;
     border-radius: 4px;
-    background: #373737;
     opacity: 0.12;
     transition: transform 200ms ease 0s, opacity 180ms ease 0s;
     z-index: 3;
@@ -138,20 +147,10 @@
     right: 0px;
     height: 1px;
     transform: translateY(-1px);
-    background: #f7f6f8;
   }
   .buttonSpan {
-    z-index: 2;
     display: flex;
-    padding: 0px 14px;
-    background: white;
     transition: background-color 200ms ease 0s;
-  }
-  .darkMode .buttonSpan {
-    background: #2b2b2b !important;
-  }
-  .darkMode .btn::before {
-    background-color: #fff;
   }
   .title {
     line-height: 20px;

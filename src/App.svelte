@@ -45,6 +45,7 @@
   import { onMount } from 'svelte';
   import { getAccount } from '@wagmi/core';
   import { get } from 'svelte/store';
+  import { getPublicClient } from '@wagmi/core';
 
   const { chains, publicClient, webSocketPublicClient } = configureChains(
     [
@@ -98,9 +99,6 @@
     ],
   });
 
-  $: address = $walletStore.address;
-  $: status = $walletStore.status;
-
   const account = getAccount();
   const { chain } = getNetwork();
 
@@ -125,22 +123,24 @@
     const currentState = get(walletStore);
 
     if (currentState.status !== 'connected') {
-      walletStore.update(state => ({
-        ...state,
-        status: 'connecting',
-      }));
+      walletStore.update(state => ({ ...state, status: 'connecting' }));
 
       if (account.isConnected) {
         const ensData = await fetchAndSetEnsData(account.address as `0x${string}`);
         const balance = await fetchBalance({ address: account.address as `0x${string}` });
         const formattedBalance = await parseFloat(balance.formatted).toFixed(
-          Math.min(4, (balance.formatted.split('.')[1] || '').length),
+          Math.max(2, Math.min(4, (balance.formatted.split('.')[1] || '').length)),
         );
+
+        const publicClient = getPublicClient();
+
         walletStore.update(state => ({
           ...state,
           address: account.address as `0x${string}`,
-          chain: chain?.name,
+          chain: publicClient.chain.name,
+          chainId: publicClient.chain.id,
           status: 'connected',
+          provider: publicClient,
           balance: formattedBalance + ' ' + balance.symbol,
           ...ensData,
         }));

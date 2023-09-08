@@ -116,13 +116,9 @@
     line-height: 21px;
     color: #999;
   }
-  .dark .subtitle {
-    color: #fff6;
-  }
   .point {
     transition: all 75ms ease 0s;
     transform: translateX(-3px);
-    /* left: -0.5px; */
   }
   .on-hover {
     opacity: 0;

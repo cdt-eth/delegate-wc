@@ -54,7 +54,7 @@
       const network = await switchNetwork({ chainId: option.chainId });
       const balance = await fetchBalance({ address: $walletStore.address as `0x${string}` });
       const formattedBalance = await parseFloat(balance.formatted).toFixed(
-        Math.min(4, (balance.formatted.split('.')[1] || '').length),
+        Math.max(2, Math.min(4, (balance.formatted.split('.')[1] || '').length)),
       );
 
       walletStore.update(state => {
@@ -203,11 +203,18 @@
 
     {#each options as option}
       <div
-        class={`flex gap-12 p-2 ${
-          $walletStore.chain === option.name ? 'bg-[#00b3ff] bg-opacity-10 rounded-xl' : ''
+        class={`flex gap-12 p-2 
+        hover:bg-light-button dark:bg-[#383838] dark:hover:bg-white dark:hover:bg-opacity-10 rounded-xl
+        ${
+          $walletStore.chain === option.name
+            ? 'bg-[#00b3ff] bg-opacity-10 dark:bg-[#00b3ff] dark:bg-opacity-20'
+            : ''
         }`}
       >
-        <button class="flex items-center gap-2" on:click={() => selectOption(option)}>
+        <button
+          class="flex items-center gap-2 w-full cursor-pointer"
+          on:click={() => selectOption(option)}
+        >
           <img src={option.logo} class="h-5 w-5 rounded-full object-cover" alt={option.name} />
           {option.name}
         </button>

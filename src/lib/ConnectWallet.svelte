@@ -15,6 +15,7 @@
     fetchBalance,
     Connector,
     type ConnectArgs,
+    getPublicClient,
   } from '@wagmi/core';
   import type { FallbackTransport } from 'viem';
   import ConnectionRequest from './ConnectionRequest.svelte';
@@ -30,7 +31,10 @@
     connectRequestStore,
     revisitingState,
   } from './stores/ConnectRequestStore';
+  import QRCode from 'qrcode';
+  import qrCodeUri from './stores/QrCode';
 
+  export let qrCodeUrl = '';
   export let config: Config<
     PublicClient<FallbackTransport>,
     WebSocketPublicClient<FallbackTransport>
@@ -98,7 +102,6 @@
       walletStore.update(state => ({
         ...state,
         status: 'connecting',
-
         connector: config.connectors[index].name,
       }));
 
@@ -124,17 +127,20 @@
 
       const ensData = await fetchAndSetEnsData(result.account);
       const balance = await fetchBalance({ address: result.account as `0x${string}` });
-      const formattedBalance = parseFloat(balance.formatted).toFixed(
-        Math.min(4, (balance.formatted.split('.')[1] || '').length),
+      const formattedBalance = await parseFloat(balance.formatted).toFixed(
+        Math.max(2, Math.min(4, (balance.formatted.split('.')[1] || '').length)),
       );
+      const publicClient = getPublicClient();
 
       walletStore.update(state => {
         return {
           ...state,
           address: result.account,
-          chain: result.connector?.chains[0].name,
+          chain: publicClient.chain.name,
+          chainId: publicClient.chain.id,
           status: 'connected',
           balance: formattedBalance + ' ' + balance.symbol,
+          provider: publicClient,
           ...ensData,
         };
       });
@@ -146,12 +152,6 @@
       console.error('Error connecting:', error);
     }
   }
-
-  import QRCode from 'qrcode';
-  import qrCodeUri from './stores/QrCode';
-
-  export let qrCodeUrl = '';
-
   async function generateQRCode(uri: string) {
     try {
       qrCodeUrl = await QRCode.toDataURL(uri, {
@@ -238,13 +238,15 @@
         >
           <img class="w-3 h-3 m-auto" src={leftArrow} alt="x-button" />
         </button>
-      {:else}
+      {:else if $walletStore.status !== 'connected'}
         <button
           class="dark:text-white w-6 h-6 cursor-pointer transform transition-transform duration-300 hover:bg-light-button dark:hover:bg-[#333333] hover:rounded-full"
           on:click={handleAboutWallets}
         >
           <img class="w-[18px] h-[18px] m-auto" src={questionMark} alt="x-button" />
         </button>
+      {:else}
+        <div class="w-6" />
       {/if}
       <h2 class="text-xl font-semibold">
         {status === 'connecting'
@@ -253,6 +255,8 @@
             : 'Scan with Phone'
           : dontHaveWallet
           ? 'Get A Wallet'
+          : $walletStore.status === 'connected'
+          ? 'Connected'
           : 'Connect Wallet'}
       </h2>
 

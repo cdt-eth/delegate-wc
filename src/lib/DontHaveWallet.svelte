@@ -38,7 +38,6 @@
   .on-hover {
     opacity: 0;
   }
-
   button:hover .on-hover {
     opacity: 1;
     color: #000;
