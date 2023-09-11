@@ -1,31 +1,8 @@
 <script lang="ts">
-  import type { FallbackTransport } from 'viem';
-  import metamaskLogo from '../assets/metamask.svg';
-  import walletConnectLogo from '../assets/walletconnectLogo.png';
-  import {
-    connect,
-    type Config,
-    type PublicClient,
-    type WebSocketPublicClient,
-    fetchBalance,
-  } from '@wagmi/core';
+  import { config } from '../utils/wagmiConfig';
+  import { getWalletIcon } from '../utils/getWalletIcons';
 
-  export let config: Config<
-    PublicClient<FallbackTransport>,
-    WebSocketPublicClient<FallbackTransport>
-  >;
   export let connectWallet: (index: number) => void;
-
-  function getWalletIcon(index: number) {
-    switch (index) {
-      case 0:
-        return metamaskLogo;
-      case 1:
-        return walletConnectLogo;
-      default:
-        return walletConnectLogo;
-    }
-  }
 </script>
 
 <div class="flex flex-col gap-4">

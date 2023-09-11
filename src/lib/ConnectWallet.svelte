@@ -7,17 +7,7 @@
   import leftArrow from '../assets/icons/leftArrow.svg';
   import questionMark from '../assets/icons/questionMark.svg';
   import checkIcon from '../assets/icons/check.png';
-  import {
-    connect,
-    type Config,
-    type PublicClient,
-    type WebSocketPublicClient,
-    fetchBalance,
-    Connector,
-    type ConnectArgs,
-    getPublicClient,
-  } from '@wagmi/core';
-  import type { FallbackTransport } from 'viem';
+  import { connect, Connector, getPublicClient, type ConnectArgs } from '@wagmi/core';
   import ConnectionRequest from './ConnectionRequest.svelte';
   import Connectors from './Connectors.svelte';
   import NetworkSwitcher from './NetworkSwitcher.svelte';
@@ -31,20 +21,15 @@
     connectRequestStore,
     revisitingState,
   } from './stores/ConnectRequestStore';
-  import QRCode from 'qrcode';
   import qrCodeUri from './stores/QrCode';
-
-  export let qrCodeUrl = '';
-  export let config: Config<
-    PublicClient<FallbackTransport>,
-    WebSocketPublicClient<FallbackTransport>
-  >;
-  export let fetchAndSetEnsData: (
-    address: `0x${string}`,
-  ) => Promise<{ ensName: null; avatarUrl: null }>;
-
-  const trimEthAddress = (address: string) =>
-    [address.slice(0, 5), address.slice(address.length - 4)].join('...');
+  import { fetchEnsData } from '../utils/fetchENSData';
+  import { fetchWalletBalance } from '../utils/fetchWalletBalance';
+  import { copyToClipboard } from '../utils/copyToClipboard';
+  import { generateQRCode } from '../utils/generateQRCode';
+  import { trimEthAddress } from '../utils/trimEthAddress';
+  import { config } from '../utils/wagmiConfig';
+  import CopyIcon from './svgs/Copy.svelte';
+  import DisconnectIcon from './svgs/Disconnect.svelte';
 
   let showModal = false;
 
@@ -66,17 +51,8 @@
     resetModalState();
   }
 
+  let qrCodeUrl: string = '';
   let copied = false;
-
-  function copyToClipboard(text: string | null) {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    copied = true;
-
-    setTimeout(() => {
-      copied = false;
-    }, 300);
-  }
 
   $: address = $walletStore.address;
   $: status = $walletStore.status;
@@ -118,7 +94,8 @@
       } else if (config.connectors[index].name === 'WalletConnect') {
         //  if 'WalletConnect', generate a QR code and set the uri
         await connectWalletConnect(async uri => {
-          await generateQRCode(uri);
+          qrCodeUrl = await generateQRCode(uri);
+
           qrCodeUri.set(uri);
         });
       }
@@ -128,14 +105,8 @@
         connector: config.connectors[index],
       });
 
-      // Fetch relevant data after successful connection
-      const ensData = await fetchAndSetEnsData(result.account);
-      const balance = await fetchBalance({ address: result.account as `0x${string}` });
-      // Format the balance 2-4 decimal places plus the symbol
-      const formattedBalance = await parseFloat(balance.formatted).toFixed(
-        Math.max(2, Math.min(4, (balance.formatted.split('.')[1] || '').length)),
-      );
-
+      const ensData = await fetchEnsData(result.account);
+      const balance = await fetchWalletBalance(result.account);
       const publicClient = getPublicClient();
 
       // Update the walletStore state with new data after successful connection
@@ -146,7 +117,7 @@
           chain: publicClient.chain.name,
           chainId: publicClient.chain.id,
           status: 'connected',
-          balance: formattedBalance + ' ' + balance.symbol,
+          balance,
           provider: publicClient,
           ...ensData,
         };
@@ -159,18 +130,6 @@
       console.error('Error connecting:', error);
     }
   }
-  async function generateQRCode(uri: string) {
-    try {
-      qrCodeUrl = await QRCode.toDataURL(uri, {
-        color: {
-          dark: $darkMode ? '#ffffff' : '#2B2B2B',
-          light: $darkMode ? '#2B2B2B' : '#ffffff',
-        },
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }
 
   // This function connects to the WalletConnect provider and handles URI creation
   async function connectWalletConnect(onUri: (uri: string) => void, chainId?: number) {
@@ -179,17 +138,13 @@
     if (chainId) {
       options.chainId = chainId;
     }
-    console.log('options', options);
 
     // Initiate the connection and wait for both connect() and connectWalletConnectProvider() promises to resolve
     return Promise.all([connect(options), connectWalletConnectProvider(connector, onUri)]).then(
       async results => {
         // Fetch relevant data after successful connection.
-        const ensData = await fetchAndSetEnsData(results[0].account);
-        const balance = await fetchBalance({ address: results[0].account as `0x${string}` });
-        const formattedBalance = await parseFloat(balance.formatted).toFixed(
-          Math.max(2, Math.min(4, (balance.formatted.split('.')[1] || '').length)),
-        );
+        const ensData = await fetchEnsData(results[0].account);
+        const balance = await fetchWalletBalance(results[0].account);
         const publicClient = getPublicClient();
 
         walletStore.update(state => {
@@ -199,7 +154,7 @@
             chain: publicClient.chain.name,
             chainId: publicClient.chain.id,
             status: 'connected',
-            balance: formattedBalance + ' ' + balance.symbol,
+            balance,
             provider: publicClient,
             ...ensData,
           };
@@ -246,7 +201,6 @@
       size="16px"
       color={$darkMode ? '#fff' : '#000'}
       {connectWallet}
-      {config}
       {qrCodeUrl}
     />
   {:else if $walletStore.status === 'connected'}
@@ -312,7 +266,6 @@
         showSpinner={$walletStore.connector === 'Metamask' && $connectRequestStore.showSpinner}
         errorCircle={$connectRequestStore.errorCircle}
         {connectWallet}
-        {config}
         {qrCodeUrl}
       />
       {#if $walletStore.connector === 'Metamask'}
@@ -333,29 +286,10 @@
 
         <button
           class="bg-light-button mt-3 hover:bg-opacity-[60%] dark:bg-[#383838] dark:hover:bg-white dark:hover:bg-opacity-10 w-full transition duration-300 dark:text-white p-3 rounded-2xl flex items-center justify-center gap-1 font-semibold"
-          on:click={() => copyToClipboard($qrCodeUri)}
+          on:click={() => copyToClipboard($qrCodeUri, copied)}
         >
-          <svg
-            aria-hidden="true"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            ><path
-              d="M14 9.5V7C14 5.89543 13.1046 5 12 5H7C5.89543 5 5 5.89543 5 7V12C5 13.1046 5.89543 14 7 14H9.5"
-              stroke={$darkMode ? '#fff' : '#999'}
-              stroke-width="2"
-            /><rect
-              x="10"
-              y="10"
-              width="9"
-              height="9"
-              rx="2"
-              stroke={$darkMode ? '#fff' : '#999'}
-              stroke-width="2"
-            />
-          </svg>
+          <CopyIcon />
+
           Copy to Clipboard
         </button>
       {/if}
@@ -369,7 +303,7 @@
               alt="avatar"
             />
 
-            <NetworkSwitcher {config} {isOpen} {toggleDropdown} />
+            <NetworkSwitcher {isOpen} {toggleDropdown} />
           </div>
         </div>
         <div />
@@ -382,32 +316,12 @@
 
             <button
               class="bg-transparent border-none h-5 p-0"
-              on:click={() => copyToClipboard($walletStore.address)}
+              on:click={() => copyToClipboard($walletStore.address, copied)}
             >
               {#if copied}
                 <img class="copy w-5 h-5 cursor-pointer" src={checkIcon} alt="copied-icon" />
               {:else}
-                <svg
-                  aria-hidden="true"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  ><path
-                    d="M14 9.5V7C14 5.89543 13.1046 5 12 5H7C5.89543 5 5 5.89543 5 7V12C5 13.1046 5.89543 14 7 14H9.5"
-                    stroke={$darkMode ? '#fff' : '#000'}
-                    stroke-width="2"
-                  /><rect
-                    x="10"
-                    y="10"
-                    width="9"
-                    height="9"
-                    rx="2"
-                    stroke={$darkMode ? '#fff' : '#000'}
-                    stroke-width="2"
-                  />
-                </svg>
+                <CopyIcon />
               {/if}
             </button>
           </div>
@@ -418,22 +332,8 @@
           class="bg-light-button hover:bg-opacity-[60%] dark:bg-[#383838] dark:hover:bg-white dark:hover:bg-opacity-10 w-full transition duration-300 dark:text-white p-3 rounded-2xl flex items-center justify-center gap-3 font-semibold"
           on:click={handleDisconnect}
         >
-          <svg
-            aria-hidden="true"
-            width="15"
-            height="14"
-            viewBox="0 0 15 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style="left: 0px; top: 0px;"
-            ><path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M4 0C1.79086 0 0 1.79086 0 4V10C0 12.2091 1.79086 14 4 14H6C6.55228 14 7 13.5523 7 13C7 12.4477 6.55228 12 6 12H4C2.89543 12 2 11.1046 2 10V4C2 2.89543 2.89543 2 4 2H6C6.55228 2 7 1.55228 7 1C7 0.447715 6.55228 0 6 0H4ZM11.7071 3.29289C11.3166 2.90237 10.6834 2.90237 10.2929 3.29289C9.90237 3.68342 9.90237 4.31658 10.2929 4.70711L11.5858 6H9.5H6C5.44772 6 5 6.44772 5 7C5 7.55228 5.44772 8 6 8H9.5H11.5858L10.2929 9.29289C9.90237 9.68342 9.90237 10.3166 10.2929 10.7071C10.6834 11.0976 11.3166 11.0976 11.7071 10.7071L14.7071 7.70711C15.0976 7.31658 15.0976 6.68342 14.7071 6.29289L11.7071 3.29289Z"
-              fill={$darkMode ? '#fff' : '#000'}
-              fill-opacity="0.4"
-            /></svg
-          >
+          <DisconnectIcon />
+
           Disconnect
         </button>
       </div>
@@ -442,7 +342,7 @@
     {:else if aboutWallets}
       <AboutWallets />
     {:else}
-      <Connectors {config} {connectWallet} />
+      <Connectors {connectWallet} />
       <DontHaveWallet {handleGetAWallet} />
     {/if}
   </div>

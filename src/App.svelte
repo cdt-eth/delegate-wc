@@ -2,122 +2,17 @@
   import Toggle from './lib/Toggle.svelte';
   import { walletStore } from './lib/stores/WalletStore';
   import ConnectWallet from './lib/ConnectWallet.svelte';
-  import {
-    InjectedConnector,
-    configureChains,
-    createConfig,
-    fetchBalance,
-    fetchEnsAvatar,
-    fetchEnsName,
-    getNetwork,
-  } from '@wagmi/core';
-  import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect';
-  import { publicProvider } from '@wagmi/core/providers/public';
-  import { infuraProvider } from '@wagmi/core/providers/infura';
-  import {
-    type Chain,
-    mainnet,
-    goerli,
-    sepolia,
-    arbitrum,
-    arbitrumGoerli,
-    avalanche,
-    avalancheFuji,
-    base,
-    baseGoerli,
-    bsc,
-    bscTestnet,
-    canto,
-    celo,
-    celoAlfajores,
-    fantom,
-    fantomTestnet,
-    gnosis,
-    gnosisChiado,
-    klaytn,
-    optimism,
-    optimismGoerli,
-    polygon,
-    polygonMumbai,
-    zora,
-    zoraTestnet,
-  } from '@wagmi/core/chains';
   import { onMount } from 'svelte';
-  import { getAccount } from '@wagmi/core';
+  import { getAccount, getNetwork } from '@wagmi/core';
   import { get } from 'svelte/store';
   import { getPublicClient } from '@wagmi/core';
-
-  const { chains, publicClient, webSocketPublicClient } = configureChains(
-    [
-      mainnet,
-      goerli,
-      sepolia,
-      arbitrum,
-      arbitrumGoerli,
-      avalanche,
-      avalancheFuji,
-      base,
-      baseGoerli,
-      bsc,
-      bscTestnet,
-      canto,
-      celo,
-      celoAlfajores,
-      fantom,
-      fantomTestnet,
-      gnosis,
-      gnosisChiado,
-      klaytn,
-      optimism,
-      optimismGoerli,
-      polygon,
-      polygonMumbai,
-      zora,
-      zoraTestnet,
-    ],
-    [infuraProvider({ apiKey: import.meta.env.VITE_INFURA_PROJECT_ID }), publicProvider()],
-  );
-
-  const config = createConfig({
-    autoConnect: true,
-    publicClient,
-    webSocketPublicClient,
-    connectors: [
-      new InjectedConnector({
-        chains,
-        options: {
-          name: 'Metamask',
-        },
-      }),
-      new WalletConnectConnector({
-        chains,
-        options: {
-          projectId: import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID,
-          showQrModal: false,
-        },
-      }),
-    ],
-  });
+  import { fetchEnsData } from './utils/fetchENSData';
+  import { fetchWalletBalance } from './utils/fetchWalletBalance';
 
   const account = getAccount();
   const { chain } = getNetwork();
 
-  export async function fetchAndSetEnsData(address: `0x${string}`) {
-    const ensData = { ensName: null, avatarUrl: null };
-
-    try {
-      const ensName = await fetchEnsName({ address });
-
-      if (ensName) {
-        const avatarUrl = await fetchEnsAvatar({ name: ensName });
-        Object.assign(ensData, { ensName, avatarUrl });
-      }
-    } catch (error) {
-      console.error('Error fetching ENS data:', error);
-    }
-
-    return ensData;
-  }
+  let address = account.address as `0x${string}`;
 
   onMount(async () => {
     const currentState = get(walletStore);
@@ -126,12 +21,8 @@
       walletStore.update(state => ({ ...state, status: 'connecting' }));
 
       if (account.isConnected) {
-        const ensData = await fetchAndSetEnsData(account.address as `0x${string}`);
-        const balance = await fetchBalance({ address: account.address as `0x${string}` });
-        const formattedBalance = await parseFloat(balance.formatted).toFixed(
-          Math.max(2, Math.min(4, (balance.formatted.split('.')[1] || '').length)),
-        );
-
+        const ensData = await fetchEnsData(address);
+        const balance = await fetchWalletBalance(address);
         const publicClient = getPublicClient();
 
         walletStore.update(state => ({
@@ -141,7 +32,7 @@
           chainId: publicClient.chain.id,
           status: 'connected',
           provider: publicClient,
-          balance: formattedBalance + ' ' + balance.symbol,
+          balance,
           ...ensData,
         }));
       } else {
@@ -157,6 +48,7 @@
 </script>
 
 <main class="flex gap-2 ml-20">
-  <ConnectWallet {config} {fetchAndSetEnsData} />
+  <ConnectWallet />
+
   <Toggle />
 </main>
