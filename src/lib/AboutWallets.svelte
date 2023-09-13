@@ -4,6 +4,7 @@
   import Slide2 from './svgs/Slide2.svelte';
   import Slide3 from './svgs/Slide3.svelte';
   import RightArrowIcon from './svgs/RightArrow.svelte';
+  import Button from './atoms/Button.svelte';
 
   const slides = [
     {
@@ -56,14 +57,13 @@
     </span>
   </div>
 
-  <button
-    on:click={() => window.open('https://ethereum.org/en/wallets/', '_blank')}
-    class="arrowBtn text-base font-semibold rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[60%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none flex items-center justify-center gap-2"
-  >
-    Learn More
-
-    <RightArrowIcon />
-  </button>
+  <Button
+    classes="arrowBtn"
+    buttonText="Learn More"
+    onClick={() => window.open('https://ethereum.org/en/wallets/', '_blank')}
+    icon={RightArrowIcon}
+    iconAfter
+  />
 </div>
 
 <style>
@@ -122,6 +122,5 @@
     font-size: 16px;
     font-weight: 400;
     line-height: 21px;
-    color: #999;
   }
 </style>

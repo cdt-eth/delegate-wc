@@ -48,7 +48,7 @@
   >
     <img
       src={selectedOption
-        ? options.filter(option => option.name === $walletStore.chain)[0]?.logo || defaultLogo
+        ? options.find(option => option.name === $walletStore.chain)?.logo || defaultLogo
         : ethereumLogo}
       class="h-5 w-5 rounded-full object-cover"
       alt="network"
@@ -57,8 +57,9 @@
     <img src={downArrowIcon} class="h-3 w-3 mr-0.5" alt="down-arrow" />
   </button>
   <div
-    style={isOpen ? 'display: flex;' : ''}
-    class="dropdown-content rounded-xl w-max p-3 bg-white dark:bg-[#383838] absolute max-h-[300px] overflow-auto text-left flex flex-col gap-1"
+    class={`dropdown-content rounded-xl w-max p-3 bg-white dark:bg-[#383838] absolute max-h-[300px] overflow-auto text-left flex flex-col gap-1 ${
+      isOpen ? 'open' : ''
+    }`}
   >
     <p class="text-[#888]">Switch Networks</p>
 

@@ -29,6 +29,9 @@
   :global(.arrowBtn:hover .on-hover) {
     opacity: 1 !important;
   }
+  :global(.dark .arrowBtn:hover :is(.on-hover, .point)) {
+    color: #fff !important;
+  }
   :global(.arrowBtn:hover .point) {
     transform: translateX(0px) !important;
   }

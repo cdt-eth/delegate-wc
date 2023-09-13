@@ -4,6 +4,7 @@
   import { walletStore } from './stores/WalletStore';
   import { config } from '../utils/wagmiConfig';
   import RetryArrowIcon from './svgs/RetryArrow.svelte';
+  import Button from './atoms/Button.svelte';
 
   export let size = '100px';
   export let color = '#1A88F8';
@@ -57,8 +58,7 @@
   {/if}
 
   {#if image}
-    <!-- svelte-ignore a11y-img-redundant-alt -->
-    <img src={image} alt="Image" class="image" />
+    <img src={image} class="image" alt="" />
 
     {#if $showRetryButton}
       <div class="retryButton absolute bottom-0 right-0">

@@ -30,15 +30,19 @@
   import { config } from '../utils/wagmiConfig';
   import CopyIcon from './svgs/Copy.svelte';
   import DisconnectIcon from './svgs/Disconnect.svelte';
+  import Button from './atoms/Button.svelte';
 
   let showModal = false;
 
-  function openModal() {
-    showModal = true;
-  }
+  // function openModal() {
+  //   showModal = true;
+  // }
 
-  function closeModal() {
-    showModal = false;
+  // function closeModal() {
+  //   showModal = false;
+  // }
+  function toggleModal(state: boolean) {
+    showModal = state;
   }
 
   let isDisconnecting = false;
@@ -47,7 +51,8 @@
     isDisconnecting = true;
     await disconnectWallet();
     isDisconnecting = false;
-    closeModal();
+    // closeModal();
+    toggleModal(false);
     resetModalState();
   }
 
@@ -123,7 +128,7 @@
         };
       });
 
-      closeModal();
+      toggleModal(false);
     } catch (error) {
       connectRequestStore.set(errorState);
 
@@ -160,7 +165,7 @@
           };
         });
 
-        closeModal();
+        toggleModal(false);
         return results;
       },
     );
@@ -180,7 +185,7 @@
   }
 
   function handleXButton() {
-    closeModal();
+    toggleModal(false);
     if (status !== 'connected') resetModalState();
     isOpen = false;
   }
@@ -193,7 +198,7 @@
 </script>
 
 <button
-  on:click={openModal}
+  on:click={() => toggleModal(true)}
   class="rounded-xl border border-transparent h-11 px-3 dark:text-white dark:bg-dark-button text-light-text bg-light-button hover:bg-opacity-[60%] dark:hover:bg-opacity-[95%] cursor-pointer transition-border-color duration-200 focus:outline-none"
 >
   {#if $walletStore.status === 'connecting'}
@@ -270,8 +275,8 @@
       />
       {#if $walletStore.connector === 'Metamask'}
         <div class="mt-4 flex flex-col gap-2">
-          <p class="title">{$connectRequestStore.title}</p>
-          <p class="subtitle">{$connectRequestStore.subtitle}</p>
+          <p class="title text-midgray">{$connectRequestStore.title}</p>
+          <p class="subtitle text-midgray">{$connectRequestStore.subtitle}</p>
         </div>
       {:else}
         <div class="mt-4 flex flex-col gap-2">
@@ -284,14 +289,12 @@
           </div>
         </div>
 
-        <button
-          class="bg-light-button mt-3 hover:bg-opacity-[60%] dark:bg-[#383838] dark:hover:bg-white dark:hover:bg-opacity-10 w-full transition duration-300 dark:text-white p-3 rounded-2xl flex items-center justify-center gap-1 font-semibold"
-          on:click={() => copyToClipboard($qrCodeUri, copied)}
-        >
-          <CopyIcon />
-
-          Copy to Clipboard
-        </button>
+        <Button
+          classes=""
+          buttonText="Copy to Clipboard"
+          onClick={() => copyToClipboard($qrCodeUri, copied)}
+          icon={CopyIcon}
+        />
       {/if}
     {:else if status !== 'disconnected'}
       <div class="flex flex-col gap-6">
@@ -367,7 +370,6 @@
     font-size: 16px;
     font-weight: 400;
     line-height: 21px;
-    color: #999;
   }
   .button-switcher {
     position: relative;

@@ -18,6 +18,7 @@ export default {
           button: '#383838',
           btnHover: '#404040',
         },
+        midgray: '#999999',
       },
     },
   },
